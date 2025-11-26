@@ -1,0 +1,52 @@
+# -------------------------
+# Android Studio / Kotlin
+# -------------------------
+
+# Gradle files
+.gradle/
+build/
+**/build/
+
+# Local configuration files
+local.properties
+*.iml
+
+# Log files
+*.log
+
+# Generated files
+capture/
+.idea/caches/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/gradle.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+# Keystore files (VERY IMPORTANT)
+*.jks
+*.keystore
+# If you want to ignore signing keys:
+# app/release.keystore
+
+# Android Studio
+.idea/
+.DS_Store
+
+# Android specific
+/app/release/*
+/app/debug/*
+
+# Apk/AAB files
+*.apk
+*.ap_
+*.aab
+
+# NDK
+.obj/
+
+# IntelliJ
+out/
+
+# Cache
+.cxx/
