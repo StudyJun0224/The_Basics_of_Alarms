@@ -165,16 +165,6 @@ fun SettingAlarmScreen(
     }
 }
 
-
-@Preview
-@Composable
-fun SettingAlarmScreenPreview(){
-    val dummyAlarmViewModel: AlarmViewModel = viewModel()
-    val dummyAlarmDaySet: Set<AlarmDay> = setOf(AlarmDay.MON, AlarmDay.THU, AlarmDay.SUN)
-    dummyAlarmViewModel.addAlarm(5,30,true, dummyAlarmDaySet, "", true)
-    SettingAlarmScreen(viewModel(), onClickConfirm = {})
-}
-
 fun earlyWakeUpTime(isAm:Boolean, hour:Int, minute: Int): String{
     var earlyTotalMinute: Int = (hour * 60 + minute) - 90
 
