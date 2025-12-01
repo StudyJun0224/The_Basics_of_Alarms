@@ -41,10 +41,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sleeptandard_mvp_demo.ClassFile.Alarm
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
+import com.example.sleeptandard_mvp_demo.Component.TimeAmPmPicker
 
 @Composable
 fun SettingAlarmScreen(
     viewModel: AlarmViewModel,
+    scheduler: AlarmScheduler,
     onClickConfirm: () -> Unit,
 ){
     var selectedHour by remember { mutableIntStateOf(8) }
@@ -54,8 +56,8 @@ fun SettingAlarmScreen(
     var selectedRingtoneUri by remember { mutableStateOf("") }
     var selectedVibrationEnabled by remember { mutableStateOf(true) }
 
-    val context = LocalContext.current
-    val scheduler = remember { AlarmScheduler(context) }
+    //val context = LocalContext.current
+    //val scheduler = remember { AlarmScheduler(context) }
 
     val allDays = listOf(
         AlarmDay.MON,
@@ -165,6 +167,7 @@ fun SettingAlarmScreen(
     }
 }
 
+// 설정시간 - 90분 계산기임. am pm 바뀌는것도 고려해놨음. 날짜 바뀌는건 AlarmScheduler 클래스가 알아서 해줌.
 fun earlyWakeUpTime(isAm:Boolean, hour:Int, minute: Int): String{
     var earlyTotalMinute: Int = (hour * 60 + minute) - 90
 
@@ -181,49 +184,4 @@ fun earlyWakeUpTime(isAm:Boolean, hour:Int, minute: Int): String{
 // 개빡쳐서 만듦
 fun BoolToAmPm(isAm: Boolean): String{
     return if(isAm) "오전" else "오후"
-}
-
-@Composable
-fun TimeAmPmPicker (
-    defaultHour12: Int = 8,
-    defaultMinute: Int = 30,
-    defaultDay: AMPMHours.DayTime = AMPMHours.DayTime.AM,
-    onTimeChange: (hour12: Int, minute: Int, isAm: Boolean) -> Unit
-){
-    var pickerValue = remember {
-        mutableStateOf<Hours>(
-            AMPMHours(
-                defaultHour12,
-                defaultMinute,
-                defaultDay
-            )
-        )
-    }
-    HoursNumberPicker(
-        dividersColor = MaterialTheme.colorScheme.primary,
-        value = pickerValue.value,
-        onValueChange = {
-            pickerValue.value = it
-
-            val ampm = it as? AMPMHours ?: return@HoursNumberPicker
-            onTimeChange(
-                ampm.hours,
-                ampm.minutes,
-                ampm.dayTime == AMPMHours.DayTime.AM
-            )
-        },
-        hoursDivider = {
-            Text(
-                modifier = Modifier
-                    .width(16.dp)
-                    .padding(horizontal = 4.dp),
-                text = ":",
-                textAlign = TextAlign.Center
-            )
-        },
-        minutesDivider = {
-            Spacer(modifier = Modifier.width(8.dp))
-        }
-    )
-
 }

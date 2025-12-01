@@ -16,18 +16,17 @@ class AlarmScheduler(private val context: Context) {
 
     fun schedule(alarm: Alarm) {
 
-
         // 알람이 실제 울리는 시간 계산
         val triggerTime = calculateNextTriggerTime(alarm)
 
-        // BroadcastReceiver에게 전달할 Intent
+        // BroadcastReceiver에게 전달할 Intent 정의
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra("label", "알람 #${alarm.id}")
             putExtra("ringtoneUri", alarm.ringtoneUri)
             putExtra("vibrationEnabled", alarm.vibrationEnabled)
         }
 
-        // 시스템이 대신 실행해줄 Intent
+        // 위에만든 intent를 시스템이 대신 실행해주는 PendingIntent
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             alarm.id, // 알람마다 다른 requestCode
@@ -35,7 +34,12 @@ class AlarmScheduler(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE   // 같은 id면 Extras만 업데이트 or 만든 뒤에는 변경 불가
         )
 
-        // 🔸 안드로이드 12(S, API 31) 이상에서만 canScheduleExactAlarms / 설정 화면 사용
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            triggerTime,
+            pendingIntent
+        )
+        /*// 🔸 사용기기가 안드로이드 12(S, API 31) 이상이면 "정확한 알람" 권한을 확인함 / 설정 화면 사용
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (!alarmManager.canScheduleExactAlarms()) {
                 // 사용자가 "정확한 알람" 권한을 아직 안 줌 → 설정 화면으로 보냄
@@ -59,7 +63,7 @@ class AlarmScheduler(private val context: Context) {
                 triggerTime,
                 pendingIntent
             )
-        }
+        }*/
     }
 
     private fun calculateNextTriggerTime(alarm: Alarm): Long {
@@ -95,5 +99,20 @@ class AlarmScheduler(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         alarmManager.cancel(pendingIntent)
+    }
+
+    // 나중에 앱 시작시 사용할 사용권한 확인 함수
+    fun confirmSetExactAlarms(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+            if (!alarmManager.canScheduleExactAlarms()) {
+                // 사용자가 "정확한 알람" 권한을 아직 안 줌 → 설정 화면으로 보냄
+                // TODO: SCHEDULE_EXACT_ALARM 대신 USE_EXACT_ALARM 고려
+                val settingsIntent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(settingsIntent)
+                return
+            }
+        }
     }
 }
