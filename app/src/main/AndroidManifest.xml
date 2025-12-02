@@ -28,6 +28,10 @@
         <receiver
             android:name=".ClassFile.AlarmReceiver"
             android:exported="false" />
+        <service 
+        android:name=".service.SmartAlarmService"
+        android:foregroundServiceType="dataSync"
+        android:exported="false" />
 
     </application>
 
