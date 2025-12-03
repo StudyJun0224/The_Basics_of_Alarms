@@ -41,8 +41,10 @@ class UserStatsManager(context: Context) {
         saveStats()
     }
 
+    @Synchronized
     fun getUserMean(): Float = if (count > 0) mean.toFloat() else 65.0f
 
+    @Synchronized
     fun getUserStd(): Float {
         if (count < 2) return 10.0f
         val variance = m2 / (count - 1)

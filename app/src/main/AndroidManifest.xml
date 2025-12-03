@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <!-- Alarm Permissions -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    
+    <!-- Foreground Service & Health Tracking Permissions -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    
+    <!-- Sensor Permissions -->
+    <uses-permission android:name="android.permission.BODY_SENSORS" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
 
     <application
         android:allowBackup="true"
@@ -28,10 +39,12 @@
         <receiver
             android:name=".ClassFile.AlarmReceiver"
             android:exported="false" />
+        
+        <!-- Sleep Tracking Foreground Service (Health Type for SDK 36) -->
         <service 
-        android:name=".service.SmartAlarmService"
-        android:foregroundServiceType="dataSync"
-        android:exported="false" />
+            android:name=".service.SmartAlarmService"
+            android:foregroundServiceType="health"
+            android:exported="false" />
 
     </application>
 

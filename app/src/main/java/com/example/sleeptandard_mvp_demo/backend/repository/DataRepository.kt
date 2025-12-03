@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.example.sleeptandard_mvp_demo.backend.model.SensorType
 import java.io.File
-import java.io.FileOutputStream
+import java.io.FileWriter
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
@@ -69,9 +69,9 @@ class DataRepository(private val context: Context) {
             ensureHeader(sensorFile, "Timestamp,Type,X,Y,Z\n")
             ensureHeader(inferenceFile, "Tag,Timestamp,Result,Details\n")
 
-            try {
-                FileOutputStream(sensorFile, true).bufferedWriter().use { sensorWriter ->
-                    FileOutputStream(inferenceFile, true).bufferedWriter().use { inferenceWriter ->
+        try {
+            FileWriter(sensorFile, true).bufferedWriter().use { sensorWriter ->
+                FileWriter(inferenceFile, true).bufferedWriter().use { inferenceWriter ->
                         
                         // [핵심 수정] isLogging이 false가 되어도 큐에 남은 데이터(!isEmpty)는 다 처리하고 종료
                         while (isLogging || !dataQueue.isEmpty()) {
@@ -126,7 +126,7 @@ class DataRepository(private val context: Context) {
     private fun ensureHeader(file: File, header: String) {
         if (!file.exists()) {
             try {
-                FileOutputStream(file).use { it.write(header.toByteArray()) }
+                FileWriter(file).use { it.write(header) }
             } catch (e: Exception) { e.printStackTrace() }
         }
     }
