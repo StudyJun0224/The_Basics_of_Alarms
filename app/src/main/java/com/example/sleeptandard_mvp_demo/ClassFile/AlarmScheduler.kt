@@ -21,6 +21,7 @@ class AlarmScheduler(private val context: Context) {
 
         // BroadcastReceiver에게 전달할 Intent 정의
         val intent = Intent(context, AlarmReceiver::class.java).apply {
+            putExtra("alarmId", alarm.id)
             putExtra("label", "알람 #${alarm.id}")
             putExtra("ringtoneUri", alarm.ringtoneUri)
             putExtra("vibrationEnabled", alarm.vibrationEnabled)
@@ -39,31 +40,7 @@ class AlarmScheduler(private val context: Context) {
             triggerTime,
             pendingIntent
         )
-        /*// 🔸 사용기기가 안드로이드 12(S, API 31) 이상이면 "정확한 알람" 권한을 확인함 / 설정 화면 사용
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (!alarmManager.canScheduleExactAlarms()) {
-                // 사용자가 "정확한 알람" 권한을 아직 안 줌 → 설정 화면으로 보냄
-                val settingsIntent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                context.startActivity(settingsIntent)
-                return
-            }
 
-            // 정확한 알람 허용된 경우
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                pendingIntent
-            )
-        } else {
-            // 🔹 안드로이드 11 이하에서는 원래대로 그냥 써도 됨 (권한 필요 없음)
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                pendingIntent
-            )
-        }*/
     }
 
     private fun calculateNextTriggerTime(alarm: Alarm): Long {
@@ -113,6 +90,8 @@ class AlarmScheduler(private val context: Context) {
                 context.startActivity(settingsIntent)
                 return
             }
+
         }
     }
+
 }

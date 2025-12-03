@@ -65,7 +65,12 @@ fun HomeScreen(
                     .fillMaxHeight()
             ){
                 items(items = alarmViewModel.alarms){
-                        item -> AlarmList(alarm = item, onToggle = {alarmViewModel.toggleAlarm(item.id)}, onDelete = {alarmViewModel.deleteAlarm(item.id)})
+                        item -> AlarmList(
+                    alarm = item,
+                    onToggle = {alarmViewModel.toggleAlarm(item.id)},
+                    onDelete = {
+                        alarmViewModel.deleteAlarm(item.id)
+                        })
                 }
             }
         }

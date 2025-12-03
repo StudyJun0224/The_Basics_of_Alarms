@@ -12,19 +12,24 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.createGraph
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
+import com.example.sleeptandard_mvp_demo.Screen.ReviewAlarmScreen
 import com.example.sleeptandard_mvp_demo.ViewModel.AlarmViewModel
 
 sealed class Screen(val route:String){
     object Home: Screen("home")
     object SettingAlarm: Screen("settingAlarm")
+    object ReviewAlarmScreen: Screen("reviewAlarm")
 }
 
 @Composable
-fun AppNav(scheduler: AlarmScheduler){
+fun AppNav(
+    scheduler: AlarmScheduler,
+    startDestination: String = Screen.Home.route
+){
     val rememberNavController = rememberNavController()
     val alarmViewModel: AlarmViewModel = viewModel()
 
-    val navGraph = rememberNavController.createGraph(startDestination = Screen.Home.route){
+    val navGraph = rememberNavController.createGraph(startDestination = startDestination){
         composable(Screen.Home.route){
             HomeScreen(
                 alarmViewModel = alarmViewModel,
@@ -37,6 +42,11 @@ fun AppNav(scheduler: AlarmScheduler){
                 viewModel = alarmViewModel,
                 scheduler = scheduler,
                 onClickConfirm = {rememberNavController.navigate(Screen.Home.route)})
+        }
+        composable(Screen.ReviewAlarmScreen.route){
+            ReviewAlarmScreen(
+                onSubmit = {rememberNavController.navigate(Screen.Home.route)}
+            )
         }
     }
 
