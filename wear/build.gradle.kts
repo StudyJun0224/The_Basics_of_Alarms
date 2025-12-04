@@ -9,7 +9,9 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.sleeptandard_mvp_demo.wear"
+        // CRITICAL: applicationId must match Phone app for Wearable Data Layer API communication
+        // namespace remains ".wear" to preserve R class and internal code structure
+        applicationId = "com.example.sleeptandard_mvp_demo"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
