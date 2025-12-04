@@ -56,13 +56,11 @@ class AlarmScheduler(private val context: Context) {
             set(Calendar.MILLISECOND, 0)
         }
 
+        // TODO: 오늘 시간이 이미 지났으면 경고해야 하지 않을까?
         // 오늘 시간이 이미 지났으면 +1일
         if (cal.before(now)) {
             cal.add(Calendar.DAY_OF_MONTH, 1)
         }
-
-        // 요일 Set까지 적용하려면 여기서 alarm.days 보고
-        // 가장 가까운 요일로 이동하는 로직을 넣으면 됨(나중에 확장)
 
         return cal.timeInMillis
     }

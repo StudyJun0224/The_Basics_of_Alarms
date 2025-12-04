@@ -31,7 +31,6 @@ import androidx.compose.ui.text.style.TextAlign
 import com.chargemap.compose.numberpicker.AMPMHours
 import com.chargemap.compose.numberpicker.Hours
 import com.chargemap.compose.numberpicker.HoursNumberPicker
-import com.example.sleeptandard_mvp_demo.ClassFile.AlarmDay
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.getValue
@@ -42,6 +41,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sleeptandard_mvp_demo.ClassFile.Alarm
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
 import com.example.sleeptandard_mvp_demo.Component.TimeAmPmPicker
+import androidx.core.net.toUri
 
 @Composable
 fun SettingAlarmScreen(
@@ -52,13 +52,14 @@ fun SettingAlarmScreen(
     var selectedHour by remember { mutableIntStateOf(8) }
     var selectedMinute by remember { mutableIntStateOf(30) }
     var selectedIsAm by remember { mutableStateOf(true) }
-    var selectedDays by remember { mutableStateOf(setOf<AlarmDay>()) }
     var selectedRingtoneUri by remember { mutableStateOf("") }
     var selectedVibrationEnabled by remember { mutableStateOf(true) }
 
-    //val context = LocalContext.current
-    //val scheduler = remember { AlarmScheduler(context) }
+    /* Not using : 알람은 하루치만 설정하도록 함.
+    var selectedDays by remember { mutableStateOf(setOf<AlarmDay>()) }
+    */
 
+    /* Not using : 알람은 하루치만 설정하도록 함
     val allDays = listOf(
         AlarmDay.MON,
         AlarmDay.TUE,
@@ -67,7 +68,7 @@ fun SettingAlarmScreen(
         AlarmDay.FRI,
         AlarmDay.SAT,
         AlarmDay.SUN
-    )
+    )*/
 
     Surface(modifier = Modifier
         .fillMaxSize()
@@ -84,7 +85,7 @@ fun SettingAlarmScreen(
                 Button(
                 onClick = {
                     val newAlarm: Alarm = viewModel.addAlarm(
-                        selectedHour, selectedMinute, selectedIsAm, days = selectedDays, ringtoneUri = selectedRingtoneUri, vibrationEnabled = selectedVibrationEnabled)
+                        selectedHour, selectedMinute, selectedIsAm, selectedRingtoneUri, selectedVibrationEnabled)
                     scheduler.schedule(newAlarm)
                     onClickConfirm()
                 } ) {
@@ -100,6 +101,7 @@ fun SettingAlarmScreen(
             // 알람 예정시간
             Text(text = earlyWakeUpTime(selectedIsAm, selectedHour, selectedMinute))
 
+            /*  Not using : 요일설정 x
             // 요일설정
             Row(
                 modifier = Modifier
@@ -120,13 +122,10 @@ fun SettingAlarmScreen(
                         },
                         label = { Text(day.label) }
                     )
-                }
-            }
+                }*/
+
 
             // 알람음 설정
-            // 현재 컨텍스트
-            val context = LocalContext.current
-
             // Activity Result 결과 받았을 때 로직
             val ringtonePickerLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.StartActivityForResult()
@@ -142,11 +141,14 @@ fun SettingAlarmScreen(
             // 알람음 선택 버튼
             Button(onClick = {
                 // 링톤 픽커 열기
-                val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply { // 추가적으로 설정합니다
-                    putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)   // 링톤 타입 = 알람
-                    putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "알람음 선택")                // 링톤 설정창 제목
-                    putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,                               // 기존 선택 알람 설정
-                        selectedRingtoneUri.let { Uri.parse(it) })
+                val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+                    .apply{
+                        // 추가적으로 설정합니다
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)   // 링톤 타입 = 알람
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "알람음 선택")                // 링톤 설정창 제목
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,                               // 기존 선택 알람 설정
+                        selectedRingtoneUri.toUri()
+                    )
                 }
                 ringtonePickerLauncher.launch(intent)
             }) {
@@ -165,6 +167,7 @@ fun SettingAlarmScreen(
             }
         }
     }
+
 }
 
 // 설정시간 - 90분 계산기임. am pm 바뀌는것도 고려해놨음. 날짜 바뀌는건 AlarmScheduler 클래스가 알아서 해줌.

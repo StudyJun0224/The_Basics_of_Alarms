@@ -15,6 +15,7 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.sleeptandard_mvp_demo.AlarmRingActivity
 import com.example.sleeptandard_mvp_demo.R
@@ -56,7 +57,12 @@ object AlarmPlayer {
                     longArrayOf(0, 600, 400), // 0ms 대기, 600ms 진동, 400ms 쉼
                     0 // 반복
                 )
+                try{
                 vibrator?.vibrate(effect)
+                    Log.d("vibration","성공")
+                }catch (e: Exception){
+                    Log.d("vibration","실패: ${e}")
+                }
             } else {
                 @Suppress("DEPRECATION")
                 vibrator?.vibrate(longArrayOf(0, 600, 400), 0)

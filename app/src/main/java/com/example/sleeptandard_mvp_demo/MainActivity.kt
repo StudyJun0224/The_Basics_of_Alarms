@@ -35,6 +35,9 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    // TODO: 이거를 다른곳으로 치워버리고 싶어요.
+    // FSI 권환 확인 함수... 기본적으로 권한 설정이 되어있긴함.
     private fun checkFullScreenIntentPermission() {
         Log.d("checkFSI", "enter the checking permission fun")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {

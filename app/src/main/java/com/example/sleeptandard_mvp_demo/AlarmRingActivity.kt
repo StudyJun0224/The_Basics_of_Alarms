@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmPlayer
@@ -127,4 +128,10 @@ fun AlarmRingScreen(
             Text("알람 끄기")
         }
     }
+}
+
+@Preview
+@Composable
+fun AlarmRingScreenPreview(){
+    AlarmRingScreen("preview", {})
 }
