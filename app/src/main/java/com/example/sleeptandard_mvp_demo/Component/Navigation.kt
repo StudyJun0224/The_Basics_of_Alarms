@@ -5,11 +5,13 @@ import com.example.sleeptandard_mvp_demo.Screen.HomeScreen
 import com.example.sleeptandard_mvp_demo.Screen.SettingAlarmScreen
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.createGraph
+import com.example.sleeptandard_mvp_demo.ClassFile.Alarm
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
 import com.example.sleeptandard_mvp_demo.Screen.ReviewAlarmScreen
 import com.example.sleeptandard_mvp_demo.Screen.SettedAlarmScreen
@@ -26,10 +28,18 @@ sealed class Screen(val route:String){
 @Composable
 fun AppNav(
     scheduler: AlarmScheduler,
-    startDestination: String = Screen.Home.route
+    startDestination: String = Screen.Home.route,
+    initialAlarm: Alarm? = null   // ✨ 추가
 ){
     val rememberNavController = rememberNavController()
     val alarmViewModel: AlarmViewModel = viewModel()
+
+    // 🔥 앱 시작 시, initialAlarm이 있으면 ViewModel에 세팅
+    LaunchedEffect(initialAlarm) {
+        if (initialAlarm != null) {
+            alarmViewModel.copyAlarm(initialAlarm)
+        }
+    }
 
     val navGraph = rememberNavController.createGraph(startDestination = startDestination){
         composable(Screen.Home.route){
@@ -45,7 +55,12 @@ fun AppNav(
             SettedAlarmScreen(
                 alarmViewModel = alarmViewModel,
                 scheduler = scheduler,
-                onTurnAlarmOff = {rememberNavController.popBackStack()}
+                onTurnAlarmOff = {
+                    rememberNavController.navigate(Screen.Home.route){
+                        popUpTo(Screen.SettedAlarm.route){inclusive = true}
+                    }
+
+                }
             )
         }
         /* Not using: 폐기

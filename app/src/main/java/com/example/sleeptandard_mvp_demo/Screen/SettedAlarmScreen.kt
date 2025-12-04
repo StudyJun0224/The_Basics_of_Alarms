@@ -1,5 +1,6 @@
 package com.example.sleeptandard_mvp_demo.Screen
 
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,9 +10,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.sleeptandard_mvp_demo.ClassFile.Alarm
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
+import com.example.sleeptandard_mvp_demo.Prefs.AlarmPreferences
 import com.example.sleeptandard_mvp_demo.ViewModel.AlarmViewModel
 
 @Composable
@@ -20,6 +23,8 @@ fun SettedAlarmScreen(
     scheduler: AlarmScheduler,
     onTurnAlarmOff : ()-> Unit
 ){
+    val context = LocalContext.current   // ✨ 추가
+
     val alarm: Alarm = alarmViewModel.alarm
 
     Surface(modifier = Modifier
@@ -39,6 +44,13 @@ fun SettedAlarmScreen(
                 onClick = {
                     onTurnAlarmOff()
                     scheduler.cancel(alarmViewModel.alarm)
+
+                    // 2) SharedPreferences 플래그/값 삭제
+                    val alarmPrefs = AlarmPreferences(context)
+                    alarmPrefs.clearAlarm()
+
+                    // 3) 네비게이션 처리
+                    onTurnAlarmOff()
                 }
             ){
                 Text("알람 끄기")
@@ -48,7 +60,7 @@ fun SettedAlarmScreen(
 }
 
 fun getWakeUpTimeRange(isAm:Boolean, hour:Int, minute: Int): String{
-    var earlyTotalMinute: Int = (hour * 60 + minute) - 90
+    var earlyTotalMinute: Int = (hour * 60 + minute) - 30
 
     val ampm: String =
         if(isAm && earlyTotalMinute < 0) "오후"

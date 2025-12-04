@@ -14,6 +14,10 @@ class AlarmScheduler(private val context: Context) {
     private val alarmManager =
         context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
+    fun getAlarmManager(): AlarmManager{
+        return alarmManager
+    }
+
     fun schedule(alarm: Alarm) {
 
         // 알람이 실제 울리는 시간 계산
@@ -76,6 +80,7 @@ class AlarmScheduler(private val context: Context) {
         alarmManager.cancel(pendingIntent)
     }
 
+    /* Not using: AlarmPermission으로 옮겼음
     // 나중에 앱 시작시 사용할 사용권한 확인 함수
     fun confirmSetExactAlarms(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
@@ -90,6 +95,6 @@ class AlarmScheduler(private val context: Context) {
             }
 
         }
-    }
+    }*/
 
 }

@@ -1,6 +1,7 @@
 package com.example.sleeptandard_mvp_demo.Screen
 
 import android.app.Activity
+import android.content.Context
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,6 +30,7 @@ import android.media.RingtoneManager
 import android.net.Uri
 
 import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
 
 import androidx.core.net.toUri
 
@@ -36,6 +38,7 @@ import com.chargemap.compose.numberpicker.AMPMHours
 
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
 import com.example.sleeptandard_mvp_demo.Component.TimeAmPmPicker
+import com.example.sleeptandard_mvp_demo.Prefs.AlarmPreferences
 import com.example.sleeptandard_mvp_demo.ViewModel.AlarmViewModel
 
 @Composable
@@ -47,6 +50,8 @@ fun HomeScreen(
     hour12 : Int = 8,
     minute : Int = 30,
 ){
+    val context = LocalContext.current
+
     var selectedHour by remember { mutableIntStateOf(8) }
     var selectedMinute by remember { mutableIntStateOf(30) }
     var selectedIsAm by remember { mutableStateOf(true) }
@@ -120,6 +125,10 @@ fun HomeScreen(
                     alarmViewModel.saveAlarm(
                         selectedHour, selectedMinute, selectedIsAm, selectedRingtoneUri, selectedVibrationEnabled)
                     scheduler.schedule(alarmViewModel.alarm)
+
+                    // 여기서 알람 정보를 디스크에 저장
+                    val alarmPrefs = AlarmPreferences(context)
+                    alarmPrefs.saveAlarm(alarmViewModel.alarm)
                 } )
             {
                 Text("GTS")

@@ -21,6 +21,11 @@ class AlarmViewModel: ViewModel() {
         return true
     }
 
+    // 외부에서 Alarm 객체를 통째로 넣어줄 수 있게
+    fun copyAlarm(alarm: Alarm) {
+        _alarm = alarm
+    }
+
     // 알람 추가
     fun addAlarm(hour: Int, minute: Int, isAm: Boolean,  ringtoneUri: String, vibrationEnabled: Boolean): Alarm {
         val newId = if (_alarms.isEmpty()) 1 else _alarms.maxOf { it.id } + 1

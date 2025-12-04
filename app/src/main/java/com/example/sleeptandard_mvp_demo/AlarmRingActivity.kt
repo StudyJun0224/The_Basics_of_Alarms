@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -27,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmPlayer
+import com.example.sleeptandard_mvp_demo.Prefs.AlarmPreferences
 import com.example.sleeptandard_mvp_demo.ui.theme.Sleeptandard_MVP_DemoTheme
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -39,6 +41,12 @@ class AlarmRingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        try{
+
+        } catch(e:Exception){
+            Log.d("WTF", "WTF: ${e}")
+        }
+        val alarmPrefs = AlarmPreferences(this)
         alarmId = intent.getIntExtra("alarmId", 0)
         label = intent.getStringExtra("label") ?: "알람"
 
@@ -59,7 +67,15 @@ class AlarmRingActivity : ComponentActivity() {
             Sleeptandard_MVP_DemoTheme {
                 AlarmRingScreen(
                     label = label,
-                    onStop = { stopAlarmAndFinish() }
+                    onStop = {
+                        stopAlarmAndFinish()
+                        try {
+                            alarmPrefs.clearAlarm()
+                        }catch (e: Exception){
+                            Log.d("clearPrefs", "WTF: ${e}")
+                        }
+
+                    }
                 )
             }
         }
