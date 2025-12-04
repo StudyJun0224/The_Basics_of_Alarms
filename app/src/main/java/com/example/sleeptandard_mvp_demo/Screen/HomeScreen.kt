@@ -1,166 +1,141 @@
 package com.example.sleeptandard_mvp_demo.Screen
 
-import androidx.compose.foundation.layout.Arrangement
+import android.app.Activity
+import android.content.Context
+
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-import com.example.sleeptandard_mvp_demo.ClassFile.Alarm
+import android.media.RingtoneManager
+
+import android.net.Uri
+
+import android.content.Intent
+import androidx.compose.ui.platform.LocalContext
+
+import androidx.core.net.toUri
+
+import com.chargemap.compose.numberpicker.AMPMHours
+
+import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
+import com.example.sleeptandard_mvp_demo.Component.TimeAmPmPicker
+import com.example.sleeptandard_mvp_demo.Prefs.AlarmPreferences
 import com.example.sleeptandard_mvp_demo.ViewModel.AlarmViewModel
 
 @Composable
 fun HomeScreen(
     alarmViewModel: AlarmViewModel,
-    onClickSetting: ()-> Unit
+    scheduler: AlarmScheduler,
+    onClickSetting: ()-> Unit,
+    isAm : Boolean = true,
+    hour12 : Int = 8,
+    minute : Int = 30,
 ){
+    val context = LocalContext.current
+
+    var selectedHour by remember { mutableIntStateOf(8) }
+    var selectedMinute by remember { mutableIntStateOf(30) }
+    var selectedIsAm by remember { mutableStateOf(true) }
+    var selectedRingtoneUri by remember { mutableStateOf("") }
+    var selectedVibrationEnabled by remember { mutableStateOf(true) }
 
     Surface(modifier = Modifier
         .fillMaxSize()
         .padding(top = 40.dp)) {
         Column(modifier = Modifier.fillMaxWidth()
-            .padding(10.dp)){
-            Row(modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-                ){
-
-                Button(onClick = {}) {
-                    Text("편집")
-                }
-
-                Text(
-                    text = "알람의 정석",
-                    style = MaterialTheme.typography.headlineSmall
-                )
-
-                Button(onClick = onClickSetting) {
-                    Icon(imageVector = Icons.Filled.AddCircle,
-                        contentDescription = null)
-
-                }
-            }
-            LazyColumn(
-                modifier = Modifier.padding(vertical = 4.dp)
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-            ){
-                items(items = alarmViewModel.alarms){
-                        item -> AlarmList(alarm = item, onToggle = {alarmViewModel.toggleAlarm(item.id)}, onDelete = {alarmViewModel.deleteAlarm(item.id)})
-                }
-            }
-        }
-
-    }
-}
-
-@Composable
-fun NothingToSee(){
-    Surface{
-        Text("Set your alarm!")
-    }
-}
-
-@Composable
-fun AlarmList(
-    alarm: Alarm,
-    onToggle: () -> Unit,
-    onDelete: () -> Unit,
-    modifier: Modifier = Modifier
-){
-    val bgColor =
-        if (alarm.isOn) {
-            MaterialTheme.colorScheme.primary
-        } else {
-            // 꺼진 알람은 더 연한 색 (예: primaryContainer, 또는 alpha 낮추기)
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-            // 또는 MaterialTheme.colorScheme.surfaceVariant
-        }
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = bgColor
-        ),
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp, horizontal = 8.dp),
-        // 추가 구현
-        onClick = { /* 알람 편집 */ }
-    ){
-
-        CardContent(alarm = alarm, onToggle = onToggle, onDelete = onDelete)
-    }
-}
-
-@Composable
-fun CardContent(
-    alarm: Alarm,
-    onToggle: ()-> Unit,
-    onDelete: ()-> Unit
-){
-    val ampm: String = if(alarm.isAm) "오전" else "오후"
-    val daysText = if (alarm.days.isEmpty()) {
-        " "
-    } else {
-        alarm.days
-            .sortedBy { it.ordinal }
-            .joinToString(separator = " ") { it.label }
-    }
-
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp, horizontal = 10.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            horizontalArrangement = Arrangement
-                .SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            Switch(
-                checked = alarm.isOn,
-                onCheckedChange = {
-                    onToggle()
+            .padding(10.dp)
+        )
+        {
+            TimeAmPmPicker(
+                defaultHour12 = alarmViewModel.alarm.hour,
+                defaultMinute = alarmViewModel.alarm.minute,
+                defaultDay =
+                    if(alarmViewModel.alarm.isAm)
+                        AMPMHours.DayTime.AM
+                    else AMPMHours.DayTime.PM,
+                onTimeChange = {hour12, minute, isAm ->
+                selectedHour = hour12
+                selectedMinute = minute
+                selectedIsAm = isAm
                 }
             )
-            Row(modifier = Modifier.padding(5.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = ampm,
-                    style = MaterialTheme.typography.bodySmall
+            // 알람음 설정
+            // Activity Result 결과 받았을 때 로직
+            val ringtonePickerLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.StartActivityForResult()
+            ) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    val uri = result.data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+                    if (uri != null) {
+                        selectedRingtoneUri = uri.toString()   // state에 저장
+                    }
+                }
+            }
+
+            // 알람음 선택 버튼
+            Button(onClick = {
+                // 링톤 픽커 열기
+                val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+                    .apply{
+                        // 추가적으로 설정합니다
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)   // 링톤 타입 = 알람
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "알람음 선택")                // 링톤 설정창 제목
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,                               // 기존 선택 알람 설정
+                            selectedRingtoneUri.toUri()
+                        )
+                    }
+                ringtonePickerLauncher.launch(intent)
+            }) {
+                Text("알람음 선택")
+            }
+
+            // 진동 선택
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("진동")
+                Switch(
+                    checked = selectedVibrationEnabled,
+                    onCheckedChange = { selectedVibrationEnabled = it }
                 )
+            }
 
-                Text(text = daysText, style = MaterialTheme.typography.bodySmall)
+            Button(
+                onClick = {
+                    onClickSetting()
+                    alarmViewModel.saveAlarm(
+                        selectedHour, selectedMinute, selectedIsAm, selectedRingtoneUri, selectedVibrationEnabled)
+                    scheduler.schedule(alarmViewModel.alarm)
 
-                Text(
-                    text = String.format("%d:%02d", alarm.hour, alarm.minute),
-                    style = MaterialTheme.typography.headlineSmall
-                )}
-
-
-            TextButton(onClick = onDelete) {
-                Text("삭제")
+                    // 여기서 알람 정보를 디스크에 저장
+                    val alarmPrefs = AlarmPreferences(context)
+                    alarmPrefs.saveAlarm(alarmViewModel.alarm)
+                } )
+            {
+                Text("GTS")
             }
         }
+
+
+
     }
 }
