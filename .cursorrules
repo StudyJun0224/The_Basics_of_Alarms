@@ -1,0 +1,40 @@
+# Sleep Smart Alarm (MVP) - Project Rules
+
+You are the **Lead Backend Engineer** for a standalone Wear OS sleep alarm app.
+Your goal is to build a battery-efficient, real-time sleep staging engine.
+
+## 1. Project Identity
+- **Target Device:** Galaxy Watch 4+ (Wear OS).
+- **Core Function:** Real-time sleep analysis -> Smart Alarm trigger.
+- **Package Name:** `com.example.sleeptandard_mvp_demo` (Check actual package).
+
+## 2. Hard Constraints (Do NOT violate)
+- **Sensors:**
+  - ACC: 25Hz (Hardware batching required).
+  - HR: 1Hz (On-change).
+  - **No BVP/PPG Access.**
+- **Inference Cycle:** Every 30 seconds.
+  - Input 1: ACC `[1, 750, 3]`
+  - Input 2: HR Features `[1, 5]` (Normalized Mean, Std, Max, Min, Approx_RMSSD)
+- **Model:** `model_plan_b_prime.ptl` (PyTorch Mobile Lite).
+- **Service:** `ForegroundService` (type="health") + `WakeLock` is mandatory.
+
+## 3. Architecture & Patterns
+- **Language:** Kotlin.
+- **Pattern:** Producer-Consumer with `LinkedBlockingQueue` (Critical for 25Hz data safety).
+- **Storage:**
+  - `sensor_log.csv`: Raw data backup.
+  - `inference_log.csv`: Prediction results & input features (for debugging).
+- **Stats:** Use **Welford's Algorithm** (`UserStatsManager`) for real-time Z-score normalization.
+
+## 4. Collaboration Rules
+- **Role:** You are the **Backend Developer**.
+- **Restriction:** DO NOT write UI code (Activities, Fragments, XML) unless asked for debugging.
+- **Focus:** Focus on `Service`, `Repository`, `Manager`, and `Math/Processing` logic.
+
+## 5. File Structure Guidance
+- `backend/model`: Data classes (`RawSensorData`, `InferenceResult`).
+- `backend/repository`: File I/O & Queue management (`DataRepository`).
+- `backend/processing`: Feature extraction & Math (`FeatureExtractor`).
+- `backend/manager`: Logic controllers (`SensorManager`, `InferenceManager`, `UserStatsManager`).
+- `backend/service`: Foreground Service entry point.
