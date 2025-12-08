@@ -22,6 +22,7 @@ import com.example.sleeptandard_mvp_demo.backend.model.SleepStage
 import com.example.sleeptandard_mvp_demo.backend.model.SleepSessionResult
 import com.example.sleeptandard_mvp_demo.backend.model.StageEntry
 import com.example.sleeptandard_mvp_demo.backend.processing.FeatureExtractor
+import com.example.sleeptandard_mvp_demo.backend.processing.InferenceManager
 import com.example.sleeptandard_mvp_demo.backend.repository.DataRepository
 import com.example.sleeptandard_mvp_demo.backend.repository.UserStatsManager
 import com.google.android.gms.tasks.Tasks
@@ -42,6 +43,7 @@ class SmartAlarmService : Service(), SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private lateinit var dataRepository: DataRepository
     private lateinit var userStatsManager: UserStatsManager
+    private lateinit var inferenceManager: InferenceManager
     private val featureExtractor = FeatureExtractor()
     private val serviceScope = CoroutineScope(Dispatchers.Default)
 
@@ -127,6 +129,7 @@ class SmartAlarmService : Service(), SensorEventListener {
             sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
             dataRepository = DataRepository(this)
             userStatsManager = UserStatsManager(this)
+            inferenceManager = InferenceManager(this)
             messageClient = Wearable.getMessageClient(this)
             
             // 3. Register sensors with hardware batching
@@ -296,41 +299,26 @@ class SmartAlarmService : Service(), SensorEventListener {
             val hrFeatures = featureExtractor.getFeatures(hrBuffer, userMean, userStd)
             val featureString = hrFeatures.joinToString(",")
 
-            // TODO: TFLite model inference
-            // For now, mock stage detection based on HR variability
-            val currentStage = detectMockStage(hrFeatures)
+            // PyTorch Mobile inference
+            val (currentStage, confidence) = inferenceManager.predict(accBuffer, hrFeatures)
             
             // Save to inference history
             val stageEntry = StageEntry(timestamp, currentStage.name)
             inferenceHistory.add(stageEntry)
             
-            // Log to file
+            // Log to file with confidence score
             dataRepository.enqueueInferenceLog(
                 timestamp, 
-                "${currentStage.name},0.0,$featureString,accSamples=${accBuffer.size}"
+                "${currentStage.name},$confidence,$featureString,accSamples=${accBuffer.size}"
             )
             
             // Smart Window Logic
             checkSmartWindowAndTrigger(timestamp, currentStage)
             
-            Log.d(TAG, "Inference completed: Stage=$currentStage, HR=${hrBuffer.size}, ACC=${accBuffer.size}")
+            Log.d(TAG, "Inference completed: Stage=$currentStage (Conf: $confidence), HR=${hrBuffer.size}, ACC=${accBuffer.size}")
         }
     }
     
-    /**
-     * Mock stage detection (임시 구현, 추후 TFLite 모델로 대체)
-     */
-    private fun detectMockStage(hrFeatures: FloatArray): SleepStage {
-        // hrFeatures[1] is std (normalized)
-        val hrStd = hrFeatures[1]
-        
-        return when {
-            hrStd > 0.5f -> SleepStage.WAKE  // High variability
-            hrStd > 0.2f -> SleepStage.LIGHT
-            hrStd > 0.1f -> SleepStage.DEEP
-            else -> SleepStage.REM
-        }
-    }
     
     /**
      * Smart Window 체크 및 트리거 로직
@@ -403,10 +391,15 @@ class SmartAlarmService : Service(), SensorEventListener {
         // 2. Stop logging and flush remaining data
         dataRepository.stopLogging()
         
-        // 3. Cancel coroutine scope
+        // 3. Release inference model resources
+        if (::inferenceManager.isInitialized) {
+            inferenceManager.release()
+        }
+        
+        // 4. Cancel coroutine scope
         serviceScope.cancel()
         
-        // 4. Release WakeLock
+        // 5. Release WakeLock
         try {
             if (wakeLock.isHeld) {
                 wakeLock.release()
