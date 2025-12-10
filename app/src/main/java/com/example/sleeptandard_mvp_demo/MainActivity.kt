@@ -4,31 +4,49 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+
+import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
 import com.example.sleeptandard_mvp_demo.Component.AppNav
+import com.example.sleeptandard_mvp_demo.Component.Screen
 import com.example.sleeptandard_mvp_demo.ui.theme.Sleeptandard_MVP_DemoTheme
+import com.example.sleeptandard_mvp_demo.Permission.checkFullScreenIntentPermission
+import com.example.sleeptandard_mvp_demo.Permission.checkNotificationPermission
+import com.example.sleeptandard_mvp_demo.Permission.checkSetExactAlarms
+import com.example.sleeptandard_mvp_demo.Prefs.AlarmPreferences
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // 권한 설정 여부 확인. 안되어 있으면 설정 창으로
+        val scheduler = AlarmScheduler(applicationContext)
+        checkSetExactAlarms(scheduler, this)
+        checkFullScreenIntentPermission(this)
+        checkNotificationPermission(this)
+
+        // SharedPreferences 불러오기
+        val alarmPrefs = AlarmPreferences(this)
+        val initialAlarm = alarmPrefs.loadAlarm()
+
+        // 인텐트에서 온 startDestination(알람 끈 후 reviewAlarm용)이 우선
+        val startDestinationFromIntent =
+            intent.getStringExtra("startDestination")
+
+        val startDestination =
+            startDestinationFromIntent
+                ?: if (alarmPrefs.isAlarmSet()) Screen.SettedAlarm.route
+                else Screen.Home.route
+
+
         enableEdgeToEdge()
         setContent {
             Sleeptandard_MVP_DemoTheme {
-                AppNav()
+                AppNav(
+                    scheduler = scheduler,
+                    startDestination = startDestination,
+                    initialAlarm = initialAlarm
+                )
             }
         }
     }
-}
-
-
-@Preview
-@Composable
-fun AppNavPreview(){
-    AppNav()
 }
