@@ -70,4 +70,7 @@ dependencies {
 
     // numberpicker
     implementation("com.chargemap.compose:numberpicker:1.0.3")
+    
+    // Wearable API for Phone-Watch communication
+    implementation("com.google.android.gms:play-services-wearable:18.1.0")
 }
