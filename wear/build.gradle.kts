@@ -60,5 +60,7 @@ dependencies {
 
     // (혹시 UI 관련 오류가 남는다면 이것도 추가)
     implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
 }
+
 
