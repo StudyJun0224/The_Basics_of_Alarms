@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.example.sleeptandard_mvp_demo.backend.model.SensorType
 import java.io.File
-import java.io.FileWriter
+import java.io.FileOutputStream // [수정] FileWriter 대신 FileOutputStream 사용
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
@@ -29,7 +29,7 @@ class DataRepository(private val context: Context) {
 
     private val QUEUE_CAPACITY = 2048
     private val dataQueue = LinkedBlockingQueue<LogEvent>(QUEUE_CAPACITY)
-    
+
     @Volatile private var isLogging = false
     private var logThread: Thread? = null
 
@@ -69,11 +69,12 @@ class DataRepository(private val context: Context) {
             ensureHeader(sensorFile, "Timestamp,Type,X,Y,Z\n")
             ensureHeader(inferenceFile, "Tag,Timestamp,Result,Details\n")
 
-        try {
-            FileWriter(sensorFile, true).bufferedWriter().use { sensorWriter ->
-                FileWriter(inferenceFile, true).bufferedWriter().use { inferenceWriter ->
-                        
-                        // [핵심 수정] isLogging이 false가 되어도 큐에 남은 데이터(!isEmpty)는 다 처리하고 종료
+            try {
+                // [핵심 수정] FileWriter -> FileOutputStream으로 변경하여 bufferedWriter() 확장 함수 사용 가능하게 함
+                FileOutputStream(sensorFile, true).bufferedWriter().use { sensorWriter ->
+                    FileOutputStream(inferenceFile, true).bufferedWriter().use { inferenceWriter ->
+
+                        // isLogging이 false가 되어도 큐에 남은 데이터(!isEmpty)는 다 처리하고 종료
                         while (isLogging || !dataQueue.isEmpty()) {
                             try {
                                 val event = dataQueue.poll(3000, TimeUnit.MILLISECONDS) ?: continue
@@ -87,7 +88,6 @@ class DataRepository(private val context: Context) {
                                         inferenceWriter.flush()
                                     }
                                     is LogEvent.Stop -> {
-                                        // [핵심 수정] 즉시 break 하지 않음.
                                         // 더 이상 새로운 데이터를 받지 않겠다고 플래그만 내림.
                                         // while 문의 !dataQueue.isEmpty() 조건에 의해 남은 데이터를 모두 처리하게 됨.
                                         isLogging = false
@@ -119,14 +119,13 @@ class DataRepository(private val context: Context) {
         while (!dataQueue.offer(LogEvent.Stop)) {
             dataQueue.poll()
         }
-        // 스레드를 interrupt 하지 않고 자연스럽게 종료되도록 유도 (잔여 데이터 처리를 위해)
-        // 필요하다면 타임아웃 후 interrupt 하는 로직을 추가할 수 있음
     }
 
     private fun ensureHeader(file: File, header: String) {
         if (!file.exists()) {
             try {
-                FileWriter(file).use { it.write(header) }
+                // [핵심 수정] 파일 생성 시에도 FileOutputStream 사용 (Byte Array 방식이 더 안전)
+                FileOutputStream(file).use { it.write(header.toByteArray()) }
             } catch (e: Exception) { e.printStackTrace() }
         }
     }

@@ -56,5 +56,9 @@ dependencies {
     // PyTorch Mobile for AI inference
     implementation("org.pytorch:pytorch_android_lite:1.10.0")
     implementation("org.pytorch:pytorch_android_torchvision_lite:1.10.0")
+    implementation("androidx.activity:activity-ktx:1.8.0")
+
+    // (혹시 UI 관련 오류가 남는다면 이것도 추가)
+    implementation("androidx.appcompat:appcompat:1.6.1")
 }
 
