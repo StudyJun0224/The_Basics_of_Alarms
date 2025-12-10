@@ -14,6 +14,12 @@ class AlarmScheduler(private val context: Context) {
     private val alarmManager =
         context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
+    private var triggerTime : Long = 0
+
+    fun getTriggerTime() :Long{
+        return triggerTime
+    }
+
     fun getAlarmManager(): AlarmManager{
         return alarmManager
     }
@@ -39,6 +45,7 @@ class AlarmScheduler(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE   // 같은 id면 Extras만 업데이트 or 만든 뒤에는 변경 불가
         )
 
+        // WTF: USE_EXACT_ALARM 권한이 있으면 에러가 안뜨네?
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             triggerTime,
@@ -47,7 +54,7 @@ class AlarmScheduler(private val context: Context) {
 
     }
 
-    private fun calculateNextTriggerTime(alarm: Alarm): Long {
+    fun calculateNextTriggerTime(alarm: Alarm): Long {
         val now = Calendar.getInstance()
 
         val cal = Calendar.getInstance().apply {
@@ -66,7 +73,9 @@ class AlarmScheduler(private val context: Context) {
             cal.add(Calendar.DAY_OF_MONTH, 1)
         }
 
-        return cal.timeInMillis
+        triggerTime = cal.timeInMillis
+
+        return triggerTime
     }
 
     fun cancel(alarm: Alarm) {

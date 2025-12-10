@@ -126,6 +126,11 @@ fun HomeScreen(
                         selectedHour, selectedMinute, selectedIsAm, selectedRingtoneUri, selectedVibrationEnabled)
                     scheduler.schedule(alarmViewModel.alarm)
 
+                    val triggerTime = scheduler.getTriggerTime()
+
+                    // TODO: 알람뷰모델에 triggerTime 보내기
+                    // alarmViewModel.startSleepTracking(triggerTime)
+
                     // 여기서 알람 정보를 디스크에 저장
                     val alarmPrefs = AlarmPreferences(context)
                     alarmPrefs.saveAlarm(alarmViewModel.alarm)

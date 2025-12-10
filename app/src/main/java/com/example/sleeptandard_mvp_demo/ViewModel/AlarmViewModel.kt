@@ -47,4 +47,5 @@ class AlarmViewModel: ViewModel() {
     fun deleteAlarm(id: Int) {
         _alarms.removeAll { it.id == id }
     }
+
 }
