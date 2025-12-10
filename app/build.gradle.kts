@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.material3)
+    implementation("com.google.android.gms:play-services-wearable:18.1.0") // [추가] 워치 통신용
 
     // icons를 import 할 수 없는 문제 때문에 추가
     implementation("androidx.compose.material:material-icons-core")
@@ -70,4 +71,7 @@ dependencies {
 
     // numberpicker
     implementation("com.chargemap.compose:numberpicker:1.0.3")
+    
+    // Wearable API for Phone-Watch communication
+    implementation("com.google.android.gms:play-services-wearable:18.1.0")
 }

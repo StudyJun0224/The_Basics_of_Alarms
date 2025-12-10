@@ -52,5 +52,9 @@ dependencies {
     
     // JSON serialization for data transfer
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    
+    // PyTorch Mobile for AI inference
+    implementation("org.pytorch:pytorch_android_lite:1.10.0")
+    implementation("org.pytorch:pytorch_android_torchvision_lite:1.10.0")
 }
 
