@@ -56,6 +56,7 @@ dependencies {
     // icons를 import 할 수 없는 문제 때문에 추가
     implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.compose.foundation.layout)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -30,13 +30,24 @@ import android.media.RingtoneManager
 import android.net.Uri
 
 import android.content.Intent
+// TODO: Arrange 이거 맞나? material3에 있는거인지 확인
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material.Divider
+import androidx.compose.material3.Scaffold
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 
 import androidx.core.net.toUri
 
 import com.chargemap.compose.numberpicker.AMPMHours
 
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
+import com.example.sleeptandard_mvp_demo.Component.AlarmBottomNavBar
+import com.example.sleeptandard_mvp_demo.Component.ConfirmButton
+import com.example.sleeptandard_mvp_demo.Component.OptionsSection
 import com.example.sleeptandard_mvp_demo.Component.TimeAmPmPicker
 import com.example.sleeptandard_mvp_demo.Prefs.AlarmPreferences
 import com.example.sleeptandard_mvp_demo.ViewModel.AlarmViewModel
@@ -57,6 +68,107 @@ fun HomeScreen(
     var selectedIsAm by remember { mutableStateOf(true) }
     var selectedRingtoneUri by remember { mutableStateOf("") }
     var selectedVibrationEnabled by remember { mutableStateOf(true) }
+
+    fun changeSelectedVibrationEnabled(){
+        selectedVibrationEnabled = !selectedVibrationEnabled
+    }
+
+    // 알람음 설정
+    // Activity Result 결과 받았을 때 로직
+    val ringtonePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val uri = result.data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+            if (uri != null) {
+                selectedRingtoneUri = uri.toString()   // state에 저장
+            }
+        }
+    }
+
+    Scaffold(
+        bottomBar = {
+            AlarmBottomNavBar(
+                onHomeClick = {},
+                onScheduleClick = {},
+                onSettingsClick = {}
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ){
+                TimeAmPmPicker(
+                    defaultHour12 = alarmViewModel.alarm.hour,
+                    defaultMinute = alarmViewModel.alarm.minute,
+                    defaultDay =
+                        if(alarmViewModel.alarm.isAm)
+                            AMPMHours.DayTime.AM
+                        else AMPMHours.DayTime.PM,
+                    onTimeChange = {hour12, minute, isAm ->
+                        selectedHour = hour12
+                        selectedMinute = minute
+                        selectedIsAm = isAm
+                    }
+                )
+
+            }
+
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            )
+
+            OptionsSection(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                onSoundClick = {
+                    val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+                    .apply{
+                        // 추가적으로 설정합니다
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)   // 링톤 타입 = 알람
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "알람음 선택")                // 링톤 설정창 제목
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,                               // 기존 선택 알람 설정
+                            selectedRingtoneUri.toUri()
+                        )
+                    }
+                    ringtonePickerLauncher.launch(intent)},
+                onVibrationClick = { /* 스위치를 껐다 켰다 하고 싶어요 */ },
+                checked = selectedVibrationEnabled,
+                onCheckedChange = changeSelectedVibrationEnabled
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ConfirmButton(
+                modifier = Modifier
+                    .fillMaxWidth(193f/350f), // 가운데 둥근 버튼
+                onClick = {{
+                    // 링톤 픽커 열기
+                    val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+                        .apply{
+                            // 추가적으로 설정합니다
+                            putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)   // 링톤 타입 = 알람
+                            putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "알람음 선택")                // 링톤 설정창 제목
+                            putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,                               // 기존 선택 알람 설정
+                                selectedRingtoneUri.toUri()
+                            )
+                        }
+                    ringtonePickerLauncher.launch(intent)
+                }}
+            )
+        }
+    }
 
     Surface(modifier = Modifier
         .fillMaxSize()
@@ -129,7 +241,7 @@ fun HomeScreen(
                     val triggerTime = scheduler.getTriggerTime()
 
                     // TODO: 알람뷰모델에 triggerTime 보내기
-                    // alarmViewModel.startSleepTracking(triggerTime)
+                    alarmViewModel.startSleepTracking(triggerTime)
 
                     // 여기서 알람 정보를 디스크에 저장
                     val alarmPrefs = AlarmPreferences(context)
@@ -142,5 +254,64 @@ fun HomeScreen(
 
 
 
+    }
+
+}
+
+@Preview
+@Composable
+fun HomeScreenPreview() {
+    Scaffold(
+        bottomBar = {
+            AlarmBottomNavBar(
+                onHomeClick = {},
+                onScheduleClick = {},
+                onSettingsClick = {}
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                TimeAmPmPicker(
+                    defaultHour12 = 6,
+                    defaultMinute = 12,
+                    defaultDay = AMPMHours.DayTime.AM,
+                    onTimeChange = { hour12, minute, isAm ->
+
+                    }
+                )
+
+            }
+
+
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            )
+
+            OptionsSection(
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ConfirmButton(
+                modifier = Modifier
+                    .fillMaxWidth(193f / 350f), // 가운데 둥근 버튼
+                onClick = {}
+            )
+        }
     }
 }
