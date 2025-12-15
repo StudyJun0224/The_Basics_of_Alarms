@@ -32,7 +32,9 @@ import androidx.compose.ui.unit.dp
 import com.example.sleeptandard_mvp_demo.ui.theme.AppIcons
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
+import androidx.compose.foundation.background
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun AlarmBottomNavBar(
@@ -78,11 +80,12 @@ fun OptionsSection(
     onSoundClick: ()->Unit,
     onVibrationClick: ()->Unit,
     checked: Boolean,
-    onCheckedChange: () -> Unit,
+    onCheckedChange: (Boolean) -> Unit,
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         // 사운드 선택 영역 (더 넓게)
         SoundOptionCard(
@@ -100,13 +103,26 @@ fun OptionsSection(
     }
 }
 
+@Preview
+@Composable
+fun OptionSectionPreview(){
+    var boul = true
+    OptionsSection(
+        onSoundClick = {},
+        onVibrationClick = {},
+        checked = boul,
+        onCheckedChange = {boul = it}
+    )
+}
+
 @Composable
 fun SoundOptionCard(
     modifier: Modifier = Modifier,
     onClick: ()->Unit
 ) {
     Surface(
-        modifier = modifier,
+        modifier = modifier
+            .background(),
         shape = RoundedCornerShape(12.dp),
         tonalElevation = 1.dp,
         onClick = onClick
@@ -133,7 +149,7 @@ fun VibrationOptionCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     checked: Boolean,
-    onCheckedChange: () -> Unit
+    onCheckedChange: (Boolean) -> Unit
     ) {
     Surface(
         modifier = modifier,
