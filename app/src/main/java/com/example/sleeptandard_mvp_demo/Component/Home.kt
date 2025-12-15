@@ -121,8 +121,7 @@ fun SoundOptionCard(
     onClick: ()->Unit
 ) {
     Surface(
-        modifier = modifier
-            .background(),
+        modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         tonalElevation = 1.dp,
         onClick = onClick
