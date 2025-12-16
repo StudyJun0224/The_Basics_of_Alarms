@@ -29,6 +29,7 @@ import com.google.android.gms.wearable.MessageClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await // [핵심] 이 친구가 .await()를 가능하게 합니다
 import kotlinx.serialization.encodeToString
@@ -209,7 +210,7 @@ class SmartAlarmService : Service(), SensorEventListener {
             hrWindow.addLast(hrValue)
 
             if (timestamp - lastFeatureExtractionTime >= FEATURE_INTERVAL_MS) {
-                if (hrWindow.size >= 10 && accWindow.size >= 500) {
+                if (hrWindow.size >= HR_WINDOW_SIZE && accWindow.size >= ACC_WINDOW_SIZE) {
                     runInferencePipeline(timestamp)
                     lastFeatureExtractionTime = timestamp
                 }
@@ -251,11 +252,16 @@ class SmartAlarmService : Service(), SensorEventListener {
         if (currentTime < windowStart) return
         if (currentTime > targetAlarmTime) return
 
+        var shouldTrigger = false
+        var triggerReason = ""
+
+        // [조건 1] WAKE 상태 감지
         if (currentStage == SleepStage.WAKE) {
-            Log.i(TAG, "WAKE detected! Triggering.")
-            sendTriggerSignal(currentTime)
-            hasTriggered = true
-        } else if (currentStage == SleepStage.LIGHT) {
+            shouldTrigger = true
+            triggerReason = "WAKE detected"
+        }
+        // [조건 2] LIGHT 3회 연속 감지
+        else if (currentStage == SleepStage.LIGHT) {
             if (lastStage == SleepStage.LIGHT) {
                 consecutiveLightCount++
             } else {
@@ -263,62 +269,93 @@ class SmartAlarmService : Service(), SensorEventListener {
             }
 
             if (consecutiveLightCount >= 3) {
-                Log.i(TAG, "3 consecutive LIGHT! Triggering.")
-                sendTriggerSignal(currentTime)
-                hasTriggered = true
+                shouldTrigger = true
+                triggerReason = "3 consecutive LIGHT"
             }
         } else {
             consecutiveLightCount = 0
         }
+
         lastStage = currentStage
-    }
 
-    // [수정] Tasks.await() 대신 .await() 사용 (코틀린 스타일)
-    private fun sendTriggerSignal(triggerTime: Long) {
-        serviceScope.launch {
-            try {
-                val nodeClient = Wearable.getNodeClient(this@SmartAlarmService)
-                // .await()를 쓰면 결과가 바로 List<Node>로 나옵니다.
-                val connectedNodes = nodeClient.connectedNodes.await()
+        // [트리거 실행] 조건 충족 시 자동 종료 시퀀스 시작
+        if (shouldTrigger) {
+            Log.i(TAG, "🚨 Trigger Condition Met: $triggerReason! Initiating auto-shutdown sequence...")
+            hasTriggered = true // 중복 실행 방지
 
-                if (connectedNodes.isNotEmpty()) {
-                    val payload = ByteBuffer.allocate(8).putLong(triggerTime).array()
-                    val phoneNodeId = connectedNodes.first().id // 이제 id 참조 가능
+            serviceScope.launch {
+                try {
+                    // [Step 1] 알람 트리거 신호 전송 (폰 울리기)
+                    sendTriggerSignalSuspend(currentTime)
 
-                    // 메시지 전송도 .await() 사용
-                    messageClient.sendMessage(phoneNodeId, PATH_TRIGGER_ALARM, payload).await()
-                    Log.i(TAG, "Trigger signal sent to phone!")
+                    // [Step 2] 잠시 대기 (신호 전송 안정성 확보)
+                    delay(500L)
+
+                    // [Step 3] 수면 결과 데이터 전송 및 서비스 종료
+                    stopAndSendResultSuspend()
+
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Error during auto-shutdown sequence", e)
+                    // 에러가 발생해도 서비스는 반드시 종료
+                    stopSelf()
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to send trigger", e)
             }
         }
     }
 
-    // [수정] Tasks.await() 대신 .await() 사용
+    // [리팩토링] Suspend 함수로 변경 - 알람 트리거 신호 전송
+    private suspend fun sendTriggerSignalSuspend(triggerTime: Long) {
+        try {
+            val nodeClient = Wearable.getNodeClient(this@SmartAlarmService)
+            val connectedNodes = nodeClient.connectedNodes.await()
+
+            if (connectedNodes.isNotEmpty()) {
+                val payload = ByteBuffer.allocate(8).putLong(triggerTime).array()
+                val phoneNodeId = connectedNodes.first().id
+
+                messageClient.sendMessage(phoneNodeId, PATH_TRIGGER_ALARM, payload).await()
+                Log.i(TAG, "✅ Trigger signal sent to phone!")
+            } else {
+                Log.w(TAG, "No connected nodes found for trigger signal")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to send trigger signal", e)
+        }
+    }
+
+    // [리팩토링] Suspend 함수로 변경 - 결과 전송 및 서비스 종료
+    private suspend fun stopAndSendResultSuspend() {
+        try {
+            val result = SleepSessionResult(
+                startTime = sessionStartTime,
+                endTime = System.currentTimeMillis(),
+                stageHistory = inferenceHistory.toList()
+            )
+            val jsonPayload = Json.encodeToString(result)
+
+            val nodeClient = Wearable.getNodeClient(this@SmartAlarmService)
+            val connectedNodes = nodeClient.connectedNodes.await()
+
+            if (connectedNodes.isNotEmpty()) {
+                val phoneNodeId = connectedNodes.first().id
+                messageClient.sendMessage(phoneNodeId, PATH_SLEEP_DATA_RESULT, jsonPayload.toByteArray()).await()
+                Log.i(TAG, "✅ Sleep session result sent to phone.")
+            } else {
+                Log.w(TAG, "No connected nodes found for result transmission")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to send result", e)
+        } finally {
+            // [중요] 성공/실패 여부와 관계없이 서비스 종료
+            Log.i(TAG, "🛑 Service shutting down...")
+            stopSelf()
+        }
+    }
+
+    // [Wrapper] onStartCommand에서 호출하기 위한 함수 (기존 호환성 유지)
     private fun stopAndSendResult() {
         serviceScope.launch {
-            try {
-                val result = SleepSessionResult(
-                    startTime = sessionStartTime,
-                    endTime = System.currentTimeMillis(),
-                    stageHistory = inferenceHistory.toList()
-                )
-                val jsonPayload = Json.encodeToString(result)
-
-                val nodeClient = Wearable.getNodeClient(this@SmartAlarmService)
-                val connectedNodes = nodeClient.connectedNodes.await()
-
-                if (connectedNodes.isNotEmpty()) {
-                    val phoneNodeId = connectedNodes.first().id
-                    messageClient.sendMessage(phoneNodeId, PATH_SLEEP_DATA_RESULT, jsonPayload.toByteArray()).await()
-                    Log.i(TAG, "Result sent to phone.")
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to send result", e)
-            } finally {
-                stopSelf()
-            }
+            stopAndSendResultSuspend()
         }
     }
 
