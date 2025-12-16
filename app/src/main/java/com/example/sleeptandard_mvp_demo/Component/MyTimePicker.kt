@@ -28,9 +28,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.sleeptandard_mvp_demo.ui.theme.TimePickerFont
 import kotlin.math.abs
 
 
@@ -40,12 +43,15 @@ fun WheelPicker(
     modifier: Modifier = Modifier,
     items: List<String>,
     visibleCount: Int = 3,
-    itemHeight: Dp = 44.dp,
+    itemHeight: Dp = 62.dp,
     selectedIndex: Int,
     onSelectedIndexChange: (Int) -> Unit,
-    textStyle: TextStyle = MaterialTheme.typography.displaySmall,
+    textStyle: TextStyle = MaterialTheme.typography.bodyLarge.copy(
+        fontSize = 45.sp
+    ),
     fadedTextStyle: TextStyle = MaterialTheme.typography.displaySmall.copy(
-        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f)
+        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f),
+        fontSize = 43.sp
     ),
 ) {
     require(visibleCount % 2 == 1)
@@ -123,9 +129,11 @@ fun WheelPicker(
                             this.alpha = alpha
                             scaleX = scale
                             scaleY = scale
-                        }
+                        },
+
                     )
                 }
+
             }
         }
     }
@@ -147,6 +155,7 @@ fun CustomTimePicker(
     var hourIndex by remember { mutableIntStateOf((defaultHour12 - 1).coerceIn(0, 11)) }
     var minuteIndex by remember { mutableIntStateOf(defaultMinute.coerceIn(0, 59)) }
 
+
     // 값 바뀔 때마다 콜백
     LaunchedEffect(ampmIndex, hourIndex, minuteIndex) {
         onTimeChange(hourIndex + 1, minuteIndex, ampmIndex == 0)
@@ -160,8 +169,16 @@ fun CustomTimePicker(
         WheelPicker(
             modifier = Modifier.width(90.dp),
             items = ampmItems,
+            itemHeight = 42.dp,
             selectedIndex = ampmIndex,
-            onSelectedIndexChange = { ampmIndex = it }
+            onSelectedIndexChange = { ampmIndex = it },
+            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                fontSize = 27.sp
+            ),
+            fadedTextStyle = MaterialTheme.typography.displaySmall.copy(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f),
+                fontSize = 25.sp
+            ),
         )
 
         Spacer(Modifier.width(12.dp))
@@ -170,7 +187,8 @@ fun CustomTimePicker(
             modifier = Modifier.width(90.dp),
             items = hourItems,
             selectedIndex = hourIndex,
-            onSelectedIndexChange = { hourIndex = it }
+            onSelectedIndexChange = { hourIndex = it },
+
         )
 
         Text(
@@ -183,7 +201,7 @@ fun CustomTimePicker(
             modifier = Modifier.width(90.dp),
             items = minuteItems,
             selectedIndex = minuteIndex,
-            onSelectedIndexChange = { minuteIndex = it }
+            onSelectedIndexChange = { minuteIndex = it },
         )
     }
 }

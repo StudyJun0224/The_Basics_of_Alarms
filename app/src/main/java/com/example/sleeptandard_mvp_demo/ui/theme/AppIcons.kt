@@ -8,4 +8,6 @@ object AppIcons {
     @DrawableRes val NavAlarm = R.drawable.ic_nav_alarm
     @DrawableRes val NavJournal = R.drawable.ic_nav_journal
     @DrawableRes val NavSettings = R.drawable.ic_nav_settings
+    @DrawableRes val HomeVibrate = R.drawable.ic_home_vibrate
+    @DrawableRes val HomeVolume = R.drawable.ic_home_volume
 }

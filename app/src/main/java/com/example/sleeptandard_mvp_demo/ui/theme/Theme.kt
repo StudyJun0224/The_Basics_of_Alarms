@@ -25,7 +25,8 @@ private val LightColorScheme = lightColorScheme(
     secondary = LightSecondary,
     tertiary = Pink40,
     surface = LightSurface,
-    onSurface = BlackFont
+    onSurface = BlackFont,
+    surfaceDim = DeactivateSurface
 
 
     /* Other default colors to override
