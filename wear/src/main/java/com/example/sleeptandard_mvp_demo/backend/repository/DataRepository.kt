@@ -5,6 +5,9 @@ import android.util.Log
 import com.example.sleeptandard_mvp_demo.backend.model.SensorType
 import java.io.File
 import java.io.FileOutputStream // [수정] FileWriter 대신 FileOutputStream 사용
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
@@ -33,11 +36,20 @@ class DataRepository(private val context: Context) {
     @Volatile private var isLogging = false
     private var logThread: Thread? = null
 
-    private val SENSOR_FILE_NAME = "sensor_log.csv"
-    private val INFERENCE_FILE_NAME = "inference_log.csv"
+    // [개선] 세션 시작 시간을 파일명에 포함하여 고유한 로그 파일 생성
+    private val sessionTimestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+        .format(Date(System.currentTimeMillis()))
+
+    private val sensorFileName = "sensor_log_${sessionTimestamp}.csv"
+    private val inferenceFileName = "inference_log_${sessionTimestamp}.csv"
 
     init {
+        Log.i(TAG, "DataRepository initialized with session: $sessionTimestamp")
         startConsumer()
+    }
+
+    companion object {
+        private const val TAG = "DataRepository"
     }
 
     // 외부 API는 원시값(Primitive)을 받아 객체 생성 비용 최소화 유지
@@ -55,7 +67,7 @@ class DataRepository(private val context: Context) {
         if (!dataQueue.offer(event)) {
             dataQueue.poll() // Backpressure: 오래된 데이터 버림
             if (!dataQueue.offer(event)) {
-                Log.w("DataRepository", "Queue full, dropping event")
+                Log.w(TAG, "Queue full, dropping event")
             }
         }
     }
@@ -63,8 +75,8 @@ class DataRepository(private val context: Context) {
     private fun startConsumer() {
         isLogging = true
         logThread = thread(start = true, name = "LogWriterThread") {
-            val sensorFile = File(context.filesDir, SENSOR_FILE_NAME)
-            val inferenceFile = File(context.filesDir, INFERENCE_FILE_NAME)
+            val sensorFile = File(context.filesDir, sensorFileName)
+            val inferenceFile = File(context.filesDir, inferenceFileName)
 
             ensureHeader(sensorFile, "Timestamp,Type,X,Y,Z\n")
             ensureHeader(inferenceFile, "Tag,Timestamp,Result,Details\n")
@@ -97,7 +109,7 @@ class DataRepository(private val context: Context) {
                                 Thread.currentThread().interrupt()
                                 break
                             } catch (e: Exception) {
-                                Log.e("DataRepository", "Writing Error", e)
+                                Log.e(TAG, "Writing Error", e)
                             }
                         }
                         // 루프 종료 후 최종 플러시
@@ -106,7 +118,7 @@ class DataRepository(private val context: Context) {
                     }
                 }
             } catch (e: Exception) {
-                Log.e("DataRepository", "File Stream Error", e)
+                Log.e(TAG, "File Stream Error", e)
             } finally {
                 logThread = null
             }
