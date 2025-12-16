@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 
@@ -69,6 +70,19 @@ fun HomeScreen(
     var selectedIsAm by remember { mutableStateOf(true) }
     var selectedRingtoneUri by remember { mutableStateOf("") }
     var selectedVibrationEnabled by remember { mutableStateOf(true) }
+    var alarmName by remember {mutableStateOf("")}
+
+    LaunchedEffect(alarmViewModel.alarm.ringtoneUri) {
+        val uriStr = alarmViewModel.alarm.ringtoneUri
+        if (uriStr.isNotBlank()) {
+            val uri = uriStr.toUri()
+            val ringtone = RingtoneManager.getRingtone(context, uri)
+            alarmName = ringtone?.getTitle(context) ?: "소리 없음"
+            selectedRingtoneUri = uriStr
+        } else {
+            alarmName = "소리 없음"
+        }
+    }
 
     // 알림음 설정 화면 Activity의 Result 받았을 때 로직
     val ringtonePickerLauncher = rememberLauncherForActivityResult(
@@ -78,6 +92,13 @@ fun HomeScreen(
             val uri = result.data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
             if (uri != null) {
                 selectedRingtoneUri = uri.toString()   // state에 저장
+                // ✅ 표시할 이름 업데이트
+                val ringtone = RingtoneManager.getRingtone(context, uri)
+                alarmName = ringtone?.getTitle(context) ?: "소리 없음"
+            }else {
+                // 사용자가 '없음' 선택했거나 취소 케이스 대응
+                selectedRingtoneUri = ""
+                alarmName = "소리 없음"
             }
         }
     }
@@ -146,7 +167,8 @@ fun HomeScreen(
                 // 진동 토글
                 onVibrationClick = { selectedVibrationEnabled = !selectedVibrationEnabled },
                 checked = selectedVibrationEnabled,
-                onCheckedChange = {selectedVibrationEnabled = it}
+                onCheckedChange = {selectedVibrationEnabled = it},
+                alarmName = alarmName
             )
 
             Spacer(modifier = Modifier.height(64.dp))
@@ -229,7 +251,8 @@ fun HomeScreenPreview() {
                 onSoundClick = {},
                 onCheckedChange = { wtf = it},
                 onVibrationClick = {},
-                checked = wtf
+                checked = wtf,
+                alarmName = "어쩔 알람"
             )
 
             Spacer(modifier = Modifier.height(64.dp))

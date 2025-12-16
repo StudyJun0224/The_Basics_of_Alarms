@@ -9,6 +9,7 @@ val BlackFont = Color(0xFF000000)
 val WhitePont = Color(0xFFF2F6FA)
 val DeactivateFont = Color(0xFFCED2D7)
 val DeactivateToggle = Color(0xFFD9D9D9)
+val DeactivateSurface = Color(0xFFE1E7ED)
 
 val LightDivider = Color(0xFFE1E7ED)
 val LightSurface = Color(0xFFD4DCE4)

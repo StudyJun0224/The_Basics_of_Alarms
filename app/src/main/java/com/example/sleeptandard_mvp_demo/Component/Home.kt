@@ -1,5 +1,6 @@
 package com.example.sleeptandard_mvp_demo.Component
 
+import android.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
@@ -34,6 +35,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import com.chargemap.compose.numberpicker.AMPMHours
 
 @Composable
@@ -82,6 +84,7 @@ fun OptionsSection(
     onVibrationClick: ()->Unit,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
+    alarmName: String
 ) {
     Row(
         modifier = modifier,
@@ -91,7 +94,8 @@ fun OptionsSection(
         // 사운드 선택 영역 (더 넓게)
         SoundOptionCard(
             modifier = Modifier.weight(2f),
-            onClick = onSoundClick
+            onClick = onSoundClick,
+            alarmName = alarmName,
         )
 
         // 진동 토글 영역 (조금 좁게)
@@ -107,14 +111,30 @@ fun OptionsSection(
 @Composable
 fun SoundOptionCard(
     modifier: Modifier = Modifier,
-    onClick: ()->Unit
+    onClick: ()->Unit,
+    alarmName: String
 ) {
+    val isNone = alarmName == "소리 없음"
+
+    val containerColor =
+        if (isNone) MaterialTheme.colorScheme.surfaceDim
+        else MaterialTheme.colorScheme.surface
+
+    // ✅ 아이콘/텍스트 색도 상태에 따라 변경
+    val iconTint =
+        if (isNone) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
+        else MaterialTheme.colorScheme.onSurface
+
+    val textColor =
+        if (isNone) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f)
+        else MaterialTheme.colorScheme.onSurface
+
     Surface(
         modifier = modifier
             .height(68.dp)
             .width(123.dp),
         shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surface,
+        color = containerColor,
         tonalElevation = 1.dp,
         onClick = onClick
     ) {
@@ -124,14 +144,24 @@ fun SoundOptionCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Icon(Icons.Default.VolumeUp, contentDescription = null)
-            Text(
-                text = "Indigo Puff",
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
+            Icon(
+                painter = painterResource(AppIcons.HomeVolume),
+                contentDescription = "알람음 설정",
+                tint = iconTint
             )
-            Icon(Icons.Default.ChevronRight, contentDescription = null)
+            Text(
+                text = alarmName,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = 15.sp
+                ),
+                color = textColor
+            )
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = iconTint
+            )
         }
     }
 }
@@ -143,12 +173,23 @@ fun VibrationOptionCard(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
     ) {
+    val isNone = !checked
+
+    val containerColor =
+        if (isNone) MaterialTheme.colorScheme.surfaceDim
+        else MaterialTheme.colorScheme.surface
+
+    // ✅ 아이콘/텍스트 색도 상태에 따라 변경
+    val iconTint =
+        if (isNone) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
+        else MaterialTheme.colorScheme.onSurface
+
     Surface(
         modifier = modifier
             .height(68.dp)
             .width(123.dp),
         shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surface,
+        color = containerColor,
         onClick = onClick
     ) {
         Row(
@@ -157,7 +198,11 @@ fun VibrationOptionCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Icon(Icons.Default.Vibration, contentDescription = null)
+            Icon(
+                painter = painterResource(AppIcons.HomeVibrate),
+                contentDescription = "진동 설정",
+                tint = iconTint
+            )
             Switch(
                 checked = checked,
                 onCheckedChange = onCheckedChange
@@ -178,7 +223,12 @@ fun ConfirmButton(
         onClick = onClick,
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
     ) {
-        Text("완료")
+        Text(
+            text = "완료",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = 18.sp
+            )
+        )
     }
 }
 
@@ -199,13 +249,17 @@ fun HomeScreenPreiview(){
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(
+                modifier = Modifier.height(92.dp)
+            )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 36.dp)
             ) {
                 TimeAmPmPicker(
                     defaultHour12 = 6,
@@ -222,23 +276,26 @@ fun HomeScreenPreiview(){
             Divider(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
+                    .padding(vertical = 30.dp)
             )
 
             OptionsSection(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(vertical = 35.dp),
                 onSoundClick = {},
                 onCheckedChange = { wtf = it},
                 onVibrationClick = {},
-                checked = wtf
+                checked = wtf,
+                alarmName = "어쩔 알람"
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(64.dp))
 
             ConfirmButton(
                 modifier = Modifier
-                    .fillMaxWidth(193f / 350f), // 가운데 둥근 버튼
+                    .fillMaxWidth(193f / 350f)
+                    .height(68.dp), // 가운데 둥근 버튼
                 onClick = {}
             )
         }
