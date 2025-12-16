@@ -47,6 +47,7 @@ import com.chargemap.compose.numberpicker.AMPMHours
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
 import com.example.sleeptandard_mvp_demo.Component.AlarmBottomNavBar
 import com.example.sleeptandard_mvp_demo.Component.ConfirmButton
+import com.example.sleeptandard_mvp_demo.Component.CustomTimePicker
 import com.example.sleeptandard_mvp_demo.Component.OptionsSection
 import com.example.sleeptandard_mvp_demo.Component.TimeAmPmPicker
 import com.example.sleeptandard_mvp_demo.Prefs.AlarmPreferences
@@ -94,39 +95,40 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(
+                modifier = Modifier.height(92.dp)
+            )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 36.dp)
             ){
-                TimeAmPmPicker(
+                CustomTimePicker(
                     defaultHour12 = alarmViewModel.alarm.hour,
                     defaultMinute = alarmViewModel.alarm.minute,
-                    defaultDay =
-                        if(alarmViewModel.alarm.isAm)
-                            AMPMHours.DayTime.AM
-                        else AMPMHours.DayTime.PM,
+                    defaultIsAm = alarmViewModel.alarm.isAm,
                     onTimeChange = {hour12, minute, isAm ->
                         selectedHour = hour12
                         selectedMinute = minute
                         selectedIsAm = isAm
                     }
                 )
-
             }
 
             Divider(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
+                    .padding(vertical = 30.dp)
             )
 
             OptionsSection(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(vertical = 35.dp),
 
                 // 링톤 설정
                 onSoundClick = {
@@ -147,11 +149,11 @@ fun HomeScreen(
                 onCheckedChange = {selectedVibrationEnabled = it}
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(64.dp))
 
             ConfirmButton(
                 modifier = Modifier
-                    .fillMaxWidth(193f/350f), // 가운데 둥근 버튼
+                    .fillMaxWidth(193f/350f),
                 onClick = {
                     onClickSetting()
                     alarmViewModel.saveAlarm(
@@ -168,6 +170,7 @@ fun HomeScreen(
                     alarmPrefs.saveAlarm(alarmViewModel.alarm)
                 }
             )
+
         }
     }
 }
@@ -189,13 +192,17 @@ fun HomeScreenPreview() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(
+                modifier = Modifier.height(92.dp)
+            )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(horizontal = 36.dp)
             ) {
                 TimeAmPmPicker(
                     defaultHour12 = 6,
@@ -212,19 +219,20 @@ fun HomeScreenPreview() {
             Divider(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
+                    .padding(vertical = 30.dp)
             )
 
             OptionsSection(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(vertical = 35.dp),
                 onSoundClick = {},
                 onCheckedChange = { wtf = it},
                 onVibrationClick = {},
                 checked = wtf
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(64.dp))
 
             ConfirmButton(
                 modifier = Modifier

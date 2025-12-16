@@ -1,16 +1,11 @@
 package com.example.sleeptandard_mvp_demo.Component
 
-import android.content.Intent
-import android.widget.Button
-import androidx.activity.compose.ManagedActivityResultLauncher
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material.icons.filled.VolumeUp
@@ -26,15 +21,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.sleeptandard_mvp_demo.ui.theme.AppIcons
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResult
-import androidx.compose.foundation.background
-import androidx.compose.runtime.MutableState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Scaffold
 import androidx.compose.ui.tooling.preview.Preview
+import com.chargemap.compose.numberpicker.AMPMHours
 
 @Composable
 fun AlarmBottomNavBar(
@@ -42,7 +42,7 @@ fun AlarmBottomNavBar(
     onScheduleClick: () -> Unit,
     onSettingsClick: () -> Unit,
 ){
-    NavigationBar {
+    NavigationBar() {
         NavigationBarItem(
             selected = true,
             onClick = onHomeClick,
@@ -50,8 +50,9 @@ fun AlarmBottomNavBar(
                 Icon(
                     painter = painterResource(AppIcons.NavAlarm),
                     contentDescription = "알람"
-                ) },
-            label = { Text("알람") }
+                )
+            },
+            label = {Text("알람")}
         )
         NavigationBarItem(
             selected = false,
@@ -103,26 +104,17 @@ fun OptionsSection(
     }
 }
 
-@Preview
-@Composable
-fun OptionSectionPreview(){
-    var boul = true
-    OptionsSection(
-        onSoundClick = {},
-        onVibrationClick = {},
-        checked = boul,
-        onCheckedChange = {boul = it}
-    )
-}
-
 @Composable
 fun SoundOptionCard(
     modifier: Modifier = Modifier,
     onClick: ()->Unit
 ) {
     Surface(
-        modifier = modifier,
+        modifier = modifier
+            .height(68.dp)
+            .width(123.dp),
         shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surface,
         tonalElevation = 1.dp,
         onClick = onClick
     ) {
@@ -136,7 +128,8 @@ fun SoundOptionCard(
             Text(
                 text = "Indigo Puff",
                 modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Icon(Icons.Default.ChevronRight, contentDescription = null)
         }
@@ -151,9 +144,11 @@ fun VibrationOptionCard(
     onCheckedChange: (Boolean) -> Unit
     ) {
     Surface(
-        modifier = modifier,
+        modifier = modifier
+            .height(68.dp)
+            .width(123.dp),
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, Color(0xFFB39DDB)), // Figma 보라색 라인 느낌
+        color = MaterialTheme.colorScheme.surface,
         onClick = onClick
     ) {
         Row(
@@ -184,5 +179,68 @@ fun ConfirmButton(
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
     ) {
         Text("완료")
+    }
+}
+
+@Preview
+@Composable
+fun HomeScreenPreiview(){
+    var wtf = true
+    Scaffold(
+        bottomBar = {
+            AlarmBottomNavBar(
+                onHomeClick = {},
+                onScheduleClick = {},
+                onSettingsClick = {}
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                TimeAmPmPicker(
+                    defaultHour12 = 6,
+                    defaultMinute = 12,
+                    defaultDay = AMPMHours.DayTime.AM,
+                    onTimeChange = { hour12, minute, isAm ->
+
+                    }
+                )
+
+            }
+
+
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            )
+
+            OptionsSection(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                onSoundClick = {},
+                onCheckedChange = { wtf = it},
+                onVibrationClick = {},
+                checked = wtf
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ConfirmButton(
+                modifier = Modifier
+                    .fillMaxWidth(193f / 350f), // 가운데 둥근 버튼
+                onClick = {}
+            )
+        }
     }
 }

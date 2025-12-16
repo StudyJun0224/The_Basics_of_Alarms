@@ -32,6 +32,7 @@ class MainActivity : ComponentActivity() {
         val startDestinationFromIntent =
             intent.getStringExtra("startDestination")
 
+        // 실험중
         val startDestination =
             startDestinationFromIntent
                 ?: if (alarmPrefs.isAlarmSet()) Screen.SettedAlarm.route

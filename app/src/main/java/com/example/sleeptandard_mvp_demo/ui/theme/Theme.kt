@@ -10,17 +10,23 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import com.example.sleeptandard_mvp_demo.ui.theme.LightBackground
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = LightPrimary,
+    secondary = LightSecondary,
+    tertiary = Pink80,
+    surface = LightSurface,
+    onSurface = BlackFont,
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = LightPrimary,
     secondary = LightSecondary,
-    tertiary = Pink40
+    tertiary = Pink40,
+    surface = LightSurface,
+    onSurface = BlackFont
+
 
     /* Other default colors to override
     background = Color(0xFFFFFBFE),
@@ -36,8 +42,8 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun Sleeptandard_MVP_DemoTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // 안드로이드12 부터 자동으로 사용자 환경에 자연스러운 색으로 맞춰주는 DynamicColor시스템. 일단 false로 두겠음.
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
