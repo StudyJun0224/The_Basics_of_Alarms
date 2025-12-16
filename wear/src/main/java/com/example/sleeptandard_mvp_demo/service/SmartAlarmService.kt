@@ -255,13 +255,10 @@ class SmartAlarmService : Service(), SensorEventListener {
         var shouldTrigger = false
         var triggerReason = ""
 
-        // [조건 1] WAKE 상태 감지
         if (currentStage == SleepStage.WAKE) {
             shouldTrigger = true
             triggerReason = "WAKE detected"
-        }
-        // [조건 2] LIGHT 3회 연속 감지
-        else if (currentStage == SleepStage.LIGHT) {
+        } else if (currentStage == SleepStage.LIGHT) {
             if (lastStage == SleepStage.LIGHT) {
                 consecutiveLightCount++
             } else {
@@ -276,34 +273,33 @@ class SmartAlarmService : Service(), SensorEventListener {
             consecutiveLightCount = 0
         }
 
-        lastStage = currentStage
-
-        // [트리거 실행] 조건 충족 시 자동 종료 시퀀스 시작
+        // [핵심] 트리거 조건 충족 시 자동 종료 시퀀스 실행
         if (shouldTrigger) {
-            Log.i(TAG, "🚨 Trigger Condition Met: $triggerReason! Initiating auto-shutdown sequence...")
+            Log.i(TAG, "🔔 Trigger Condition Met: $triggerReason! Initiating shutdown sequence...")
             hasTriggered = true // 중복 실행 방지
 
             serviceScope.launch {
                 try {
-                    // [Step 1] 알람 트리거 신호 전송 (폰 울리기)
+                    // 1. 알람 신호 전송 (폰 울리기)
                     sendTriggerSignalSuspend(currentTime)
 
-                    // [Step 2] 잠시 대기 (신호 전송 안정성 확보)
+                    // 2. 짧은 대기 (메시지 전송 안정성 확보)
                     delay(500L)
 
-                    // [Step 3] 수면 결과 데이터 전송 및 서비스 종료
+                    // 3. 결과 전송 및 서비스 종료 (내부에서 stopSelf 호출됨)
                     stopAndSendResultSuspend()
 
                 } catch (e: Exception) {
                     Log.e(TAG, "❌ Error during auto-shutdown sequence", e)
-                    // 에러가 발생해도 서비스는 반드시 종료
-                    stopSelf()
+                    stopSelf() // 에러 발생 시에도 서비스는 종료
                 }
             }
         }
+
+        lastStage = currentStage
     }
 
-    // [리팩토링] Suspend 함수로 변경 - 알람 트리거 신호 전송
+    // [리팩토링] Suspend 함수로 변경 - 순차 실행 가능
     private suspend fun sendTriggerSignalSuspend(triggerTime: Long) {
         try {
             val nodeClient = Wearable.getNodeClient(this@SmartAlarmService)
@@ -316,14 +312,14 @@ class SmartAlarmService : Service(), SensorEventListener {
                 messageClient.sendMessage(phoneNodeId, PATH_TRIGGER_ALARM, payload).await()
                 Log.i(TAG, "✅ Trigger signal sent to phone!")
             } else {
-                Log.w(TAG, "No connected nodes found for trigger signal")
+                Log.w(TAG, "No connected nodes to send trigger signal")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to send trigger signal", e)
+            Log.e(TAG, "Failed to send trigger", e)
         }
     }
 
-    // [리팩토링] Suspend 함수로 변경 - 결과 전송 및 서비스 종료
+    // [리팩토링] Suspend 함수로 변경 - 순차 실행 가능
     private suspend fun stopAndSendResultSuspend() {
         try {
             val result = SleepSessionResult(
@@ -339,20 +335,18 @@ class SmartAlarmService : Service(), SensorEventListener {
             if (connectedNodes.isNotEmpty()) {
                 val phoneNodeId = connectedNodes.first().id
                 messageClient.sendMessage(phoneNodeId, PATH_SLEEP_DATA_RESULT, jsonPayload.toByteArray()).await()
-                Log.i(TAG, "✅ Sleep session result sent to phone.")
+                Log.i(TAG, "✅ Result sent to phone.")
             } else {
-                Log.w(TAG, "No connected nodes found for result transmission")
+                Log.w(TAG, "No connected nodes to send result")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to send result", e)
         } finally {
-            // [중요] 성공/실패 여부와 관계없이 서비스 종료
-            Log.i(TAG, "🛑 Service shutting down...")
             stopSelf()
         }
     }
 
-    // [Wrapper] onStartCommand에서 호출하기 위한 함수 (기존 호환성 유지)
+    // [래퍼] onStartCommand에서 호출되는 기존 함수 유지
     private fun stopAndSendResult() {
         serviceScope.launch {
             stopAndSendResultSuspend()
