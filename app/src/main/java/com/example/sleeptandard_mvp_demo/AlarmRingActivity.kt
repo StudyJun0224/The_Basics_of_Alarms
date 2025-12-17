@@ -27,8 +27,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmPlayer
 import com.example.sleeptandard_mvp_demo.Prefs.AlarmPreferences
+import com.example.sleeptandard_mvp_demo.ViewModel.AlarmViewModel
 import com.example.sleeptandard_mvp_demo.ui.theme.Sleeptandard_MVP_DemoTheme
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -37,9 +39,13 @@ class AlarmRingActivity : ComponentActivity() {
 
     private var alarmId: Int = 0
     private var label: String = "알람"
+    private lateinit var alarmViewModel: AlarmViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // ViewModel 초기화
+        alarmViewModel = ViewModelProvider(this)[AlarmViewModel::class.java]
 
         try{
 
@@ -92,7 +98,11 @@ class AlarmRingActivity : ComponentActivity() {
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.cancel(alarmId)
 
-        // 3) MainActivity로 넘어가면서 알람 리뷰 화면에서 부터 시작하도록 요청
+        // 3) 워치에 수면 추적 중지 명령 전송
+        alarmViewModel.stopSleepTracking()
+        Log.i(TAG, "Stop command sent to Watch")
+
+        // 4) MainActivity로 넘어가면서 알람 리뷰 화면에서 부터 시작하도록 요청
         val intent = Intent(this, MainActivity::class.java).apply {
             putExtra("startDestination", "reviewAlarm") // Screen.AfterAlarm.route 값
             addFlags(
@@ -102,7 +112,7 @@ class AlarmRingActivity : ComponentActivity() {
         }
         startActivity(intent)
 
-        // 3) 화면 닫기
+        // 5) 화면 닫기
         finish()
     }
 
@@ -110,6 +120,10 @@ class AlarmRingActivity : ComponentActivity() {
         super.onDestroy()
         // 혹시 남아있을지 모를 소리/진동 정리
         AlarmPlayer.stop()
+    }
+    
+    companion object {
+        private const val TAG = "AlarmRingActivity"
     }
 }
 

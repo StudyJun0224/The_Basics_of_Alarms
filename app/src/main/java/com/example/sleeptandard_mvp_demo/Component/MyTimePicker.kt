@@ -1,8 +1,9 @@
 package com.example.sleeptandard_mvp_demo.Component
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -42,52 +43,102 @@ fun WheelPicker(
     items: List<String>,
     visibleCount: Int = 3,
     itemHeight: Dp = 62.dp,
+
+    // 🔥 순환/리센터 옵션
+    isCyclic: Boolean = false,
+    cycles: Int = 200,          // 가짜 반복 횟수 (충분히 크게)
+
     selectedIndex: Int,
     onSelectedIndexChange: (Int) -> Unit,
     textStyle: TextStyle = MaterialTheme.typography.bodyLarge.copy(
         fontSize = 45.sp
     ),
-    fadedTextStyle: TextStyle = MaterialTheme.typography.displaySmall.copy(
+    fadedTextStyle: TextStyle = MaterialTheme.typography.bodyLarge.copy(
         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f),
         fontSize = 43.sp
     ),
 ) {
     require(visibleCount % 2 == 1)
+
+    val baseSize = items.size
     val centerOffset = visibleCount / 2
+    val virtualCount = if (isCyclic) baseSize * cycles else baseSize
 
     val state = rememberLazyListState()
 
-    // ✅ 스냅을 "센터" 기준으로
-    val fling = rememberSnapFlingBehavior(
-        lazyListState = state,
-        snapPosition = SnapPosition.Center
-    )
 
-    // ✅ 뷰포트 중앙에 가장 가까운 아이템 인덱스 계산
-    val centeredIndex by remember {
+    val snapFling = rememberSnapFlingBehavior(lazyListState = state)
+
+    // 스크롤 속도조절 값
+    val slowFling = remember(snapFling) {
+        VelocityScalingFlingBehavior(
+            base = snapFling,
+            velocityFactor = 0.5f
+        )
+    }
+
+    /* -----------------------------
+     * 1️⃣ 현재 "중앙에 보이는 가상 인덱스"
+     * ----------------------------- */
+    val centeredVirtualIndex by remember {
         derivedStateOf {
             val layout = state.layoutInfo
-            val viewportCenter = (layout.viewportStartOffset + layout.viewportEndOffset) / 2
+            if (layout.visibleItemsInfo.isEmpty()) return@derivedStateOf 0
 
-            val closest = layout.visibleItemsInfo.minByOrNull { info ->
+            val viewportCenter =
+                (layout.viewportStartOffset + layout.viewportEndOffset) / 2
+
+            layout.visibleItemsInfo.minByOrNull { info ->
                 val itemCenter = info.offset + info.size / 2
                 abs(itemCenter - viewportCenter)
-            }
-
-            closest?.index ?: selectedIndex
+            }?.index ?: 0
         }
     }
 
-    // ✅ 외부 selectedIndex 바뀌면 해당 아이템을 중앙으로 오게 스크롤
-    LaunchedEffect(selectedIndex) {
-        // contentPadding 때문에 scrollToItem만 해도 중앙에 오기 쉬움
-        state.scrollToItem(selectedIndex)
+    /* -----------------------------
+     * 2️⃣ 가상 인덱스 → 실제 인덱스(0..59)
+     * ----------------------------- */
+    val centeredRealIndex by remember {
+        derivedStateOf {
+            if (baseSize == 0) 0
+            else ((centeredVirtualIndex % baseSize) + baseSize) % baseSize
+        }
     }
 
-    // ✅ 스크롤이 멈추면 중앙 아이템을 선택값으로 확정
+    /* -----------------------------
+     * 3️⃣ 초기 진입 / 외부 값 변경 시
+     *    → "가운데"로 이동
+     * ----------------------------- */
+    LaunchedEffect(selectedIndex, isCyclic) {
+        if (baseSize == 0) return@LaunchedEffect
+
+        if (isCyclic) {
+            val middle = (virtualCount / 2) - ((virtualCount / 2) % baseSize)
+            state.scrollToItem(middle + selectedIndex)
+        } else {
+            state.scrollToItem(selectedIndex.coerceIn(0, baseSize - 1))
+        }
+    }
+
+    /* -----------------------------
+     * 4️⃣ 스크롤 멈추면 선택 확정 + 리센터
+     * ----------------------------- */
     LaunchedEffect(state.isScrollInProgress) {
         if (!state.isScrollInProgress) {
-            onSelectedIndexChange(centeredIndex.coerceIn(0, items.lastIndex))
+            // 선택값 콜백
+            onSelectedIndexChange(centeredRealIndex)
+
+            // 🔥 리센터 조건 (끝 근처면 중앙으로)
+            if (isCyclic) {
+                val threshold = baseSize * 2
+                val min = threshold
+                val max = virtualCount - threshold
+
+                if (centeredVirtualIndex < min || centeredVirtualIndex > max) {
+                    val middle = (virtualCount / 2) - ((virtualCount / 2) % baseSize)
+                    state.scrollToItem(middle + centeredRealIndex)
+                }
+            }
         }
     }
 
@@ -100,12 +151,16 @@ fun WheelPicker(
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = state,
-            flingBehavior = fling,
+            flingBehavior = slowFling,
             horizontalAlignment = Alignment.CenterHorizontally,
             contentPadding = PaddingValues(vertical = itemHeight * centerOffset)
         ) {
-            items(items.size) { index ->
-                val distance = abs(index - centeredIndex)
+            items(virtualCount) { virtualIndex ->
+                val realIndex =
+                    if (baseSize == 0) 0
+                    else ((virtualIndex % baseSize) + baseSize) % baseSize
+
+                val distance = abs(virtualIndex - centeredVirtualIndex)
 
                 val alpha = when (distance) {
                     0 -> 1f
@@ -121,17 +176,15 @@ fun WheelPicker(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = items[index],
+                        text = items[realIndex],
                         style = if (distance == 0) textStyle else fadedTextStyle,
                         modifier = Modifier.graphicsLayer {
                             this.alpha = alpha
                             scaleX = scale
                             scaleY = scale
-                        },
-
+                        }
                     )
                 }
-
             }
         }
     }
@@ -173,7 +226,7 @@ fun CustomTimePicker(
             textStyle = MaterialTheme.typography.bodyLarge.copy(
                 fontSize = 27.sp
             ),
-            fadedTextStyle = MaterialTheme.typography.displaySmall.copy(
+            fadedTextStyle = MaterialTheme.typography.bodyLarge.copy(
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f),
                 fontSize = 25.sp
             ),
@@ -186,12 +239,15 @@ fun CustomTimePicker(
             items = hourItems,
             selectedIndex = hourIndex,
             onSelectedIndexChange = { hourIndex = it },
+            isCyclic = true,
 
         )
 
         Text(
             text = ":",
-            style = MaterialTheme.typography.displaySmall,
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontSize = 45.sp
+            ),
             modifier = Modifier.padding(horizontal = 8.dp)
         )
 
@@ -200,7 +256,17 @@ fun CustomTimePicker(
             items = minuteItems,
             selectedIndex = minuteIndex,
             onSelectedIndexChange = { minuteIndex = it },
+            isCyclic = true,
         )
+    }
+}
+
+private class VelocityScalingFlingBehavior(
+    private val base: FlingBehavior,
+    private val velocityFactor: Float
+) : FlingBehavior {
+    override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
+        return with(base) { performFling(initialVelocity * velocityFactor) }
     }
 }
 
