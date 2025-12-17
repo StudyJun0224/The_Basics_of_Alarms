@@ -200,7 +200,12 @@ fun HomeScreen(
 @Preview
 @Composable
 fun HomeScreenPreview() {
-    var wtf = true
+
+    var bool = true
+    var h = 6
+    var m = 25
+    var i = true
+
     Scaffold(
         bottomBar = {
             AlarmBottomNavBar(
@@ -226,17 +231,14 @@ fun HomeScreenPreview() {
                     .fillMaxWidth()
                     .padding(horizontal = 36.dp)
             ) {
-                TimeAmPmPicker(
-                    defaultHour12 = 6,
-                    defaultMinute = 12,
-                    defaultDay = AMPMHours.DayTime.AM,
+                CustomTimePicker(
                     onTimeChange = { hour12, minute, isAm ->
-
+                        h = hour12
+                        m = minute
+                        i = isAm
                     }
                 )
-
             }
-
 
             Divider(
                 modifier = Modifier
@@ -248,20 +250,25 @@ fun HomeScreenPreview() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 35.dp),
+
+                // 링톤 설정
                 onSoundClick = {},
-                onCheckedChange = { wtf = it},
-                onVibrationClick = {},
-                checked = wtf,
-                alarmName = "어쩔 알람"
+
+                // 진동 토글
+                onVibrationClick = { },
+                checked = bool,
+                onCheckedChange = { bool = it },
+                alarmName = "alarmName"
             )
 
             Spacer(modifier = Modifier.height(64.dp))
 
             ConfirmButton(
                 modifier = Modifier
-                    .fillMaxWidth(193f / 350f), // 가운데 둥근 버튼
+                    .fillMaxWidth(193f / 350f),
                 onClick = {}
             )
+
         }
     }
 }
