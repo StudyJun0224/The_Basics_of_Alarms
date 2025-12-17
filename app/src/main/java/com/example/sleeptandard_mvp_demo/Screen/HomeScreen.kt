@@ -1,5 +1,6 @@
 package com.example.sleeptandard_mvp_demo.Screen
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 
@@ -36,8 +37,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 
@@ -54,6 +58,7 @@ import com.example.sleeptandard_mvp_demo.Component.TimeAmPmPicker
 import com.example.sleeptandard_mvp_demo.Prefs.AlarmPreferences
 import com.example.sleeptandard_mvp_demo.ViewModel.AlarmViewModel
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun HomeScreen(
     alarmViewModel: AlarmViewModel,
@@ -92,7 +97,7 @@ fun HomeScreen(
             val uri = result.data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
             if (uri != null) {
                 selectedRingtoneUri = uri.toString()   // state에 저장
-                // ✅ 표시할 이름 업데이트
+                // 표시할 이름 업데이트
                 val ringtone = RingtoneManager.getRingtone(context, uri)
                 alarmName = ringtone?.getTitle(context) ?: "소리 없음"
             }else {
@@ -102,6 +107,8 @@ fun HomeScreen(
             }
         }
     }
+
+    val bigSpacerHeight = LocalConfiguration.current.screenHeightDp
 
     Scaffold(
         bottomBar = {
@@ -116,17 +123,17 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+                .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(
-                modifier = Modifier.height(92.dp)
+                modifier = Modifier.height((144 - 16000/bigSpacerHeight).dp)
             )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 36.dp)
+                    .height(186.dp)
             ){
                 CustomTimePicker(
                     defaultHour12 = alarmViewModel.alarm.hour,
@@ -140,16 +147,16 @@ fun HomeScreen(
                 )
             }
 
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 30.dp)
+                    .padding(vertical = 65.dp),
+                thickness = 0.dp, color = DividerDefaults.color
             )
 
             OptionsSection(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 35.dp),
+                    .fillMaxWidth(),
 
                 // 링톤 설정
                 onSoundClick = {
@@ -175,7 +182,8 @@ fun HomeScreen(
 
             ConfirmButton(
                 modifier = Modifier
-                    .fillMaxWidth(193f/350f),
+                    .fillMaxWidth(193f/350f)
+                    .height(67.dp),
                 onClick = {
                     onClickSetting()
                     alarmViewModel.saveAlarm(

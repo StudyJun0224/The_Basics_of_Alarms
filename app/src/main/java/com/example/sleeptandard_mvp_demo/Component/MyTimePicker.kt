@@ -23,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -65,6 +66,10 @@ fun WheelPicker(
     val virtualCount = if (isCyclic) baseSize * cycles else baseSize
 
     val state = rememberLazyListState()
+
+    // gpt가 지적한 초기 컴포지션 오류를 위한 억제기 생성
+    var didInitialPosition by remember { mutableStateOf(false) }
+    var suppressCallback by remember { mutableStateOf(false) }
 
 
     val snapFling = rememberSnapFlingBehavior(lazyListState = state)
@@ -112,12 +117,17 @@ fun WheelPicker(
     LaunchedEffect(selectedIndex, isCyclic) {
         if (baseSize == 0) return@LaunchedEffect
 
+        suppressCallback = true
+
         if (isCyclic) {
             val middle = (virtualCount / 2) - ((virtualCount / 2) % baseSize)
             state.scrollToItem(middle + selectedIndex)
         } else {
             state.scrollToItem(selectedIndex.coerceIn(0, baseSize - 1))
         }
+
+        didInitialPosition = true
+        suppressCallback = false
     }
 
     /* -----------------------------
@@ -125,10 +135,15 @@ fun WheelPicker(
      * ----------------------------- */
     LaunchedEffect(state.isScrollInProgress) {
         if (!state.isScrollInProgress) {
-            // 선택값 콜백
+
+            // ✅ 초기 위치 잡기 전엔 스킵
+            if (!didInitialPosition) return@LaunchedEffect
+
+            // ✅ 프로그램 스크롤(초기/외부 selectedIndex 반영) 중엔 스킵
+            if (suppressCallback) return@LaunchedEffect
+
             onSelectedIndexChange(centeredRealIndex)
 
-            // 🔥 리센터 조건 (끝 근처면 중앙으로)
             if (isCyclic) {
                 val threshold = baseSize * 2
                 val min = threshold
@@ -136,7 +151,11 @@ fun WheelPicker(
 
                 if (centeredVirtualIndex < min || centeredVirtualIndex > max) {
                     val middle = (virtualCount / 2) - ((virtualCount / 2) % baseSize)
+
+                    // 리센터도 프로그램 스크롤이므로 콜백 억제
+                    suppressCallback = true
                     state.scrollToItem(middle + centeredRealIndex)
+                    suppressCallback = false
                 }
             }
         }

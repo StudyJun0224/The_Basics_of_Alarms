@@ -52,7 +52,9 @@ fun AppNav(
                 alarmViewModel = alarmViewModel,
                 scheduler = scheduler,
                 onClickSetting = {
-                rememberNavController.navigate(Screen.SettedAlarm.route)
+                rememberNavController.navigate(Screen.SettedAlarm.route){
+                    popUpTo(Screen.Home.route){inclusive = true}
+                }
                 },
             )
         }
