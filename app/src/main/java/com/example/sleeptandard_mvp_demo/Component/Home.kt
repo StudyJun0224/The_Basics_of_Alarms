@@ -224,7 +224,7 @@ fun ConfirmButton(
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
     ) {
         Text(
-            text = "완료",
+            text = "GTS",
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontSize = 18.sp
             )
