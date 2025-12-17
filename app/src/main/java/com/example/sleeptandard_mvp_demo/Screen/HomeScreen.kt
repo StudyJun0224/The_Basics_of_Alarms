@@ -121,21 +121,24 @@ fun HomeScreen(
 
             Button(
                 onClick = {
-                    onClickSetting()
-                    alarmViewModel.saveAlarm(
-                        selectedHour, selectedMinute, selectedIsAm, selectedRingtoneUri, selectedVibrationEnabled)
+                    onClickSetting() // 기존 화면 전환 등
+
+                    // 1. 알람 저장 및 스케줄링 (기존 로직)
+                    alarmViewModel.saveAlarm(selectedHour, selectedMinute, selectedIsAm, selectedRingtoneUri, selectedVibrationEnabled)
                     scheduler.schedule(alarmViewModel.alarm)
 
+                    // 2. 워치 깨우기 (전선 연결!)
                     val triggerTime = scheduler.getTriggerTime()
+                    alarmViewModel.startSleepTracking(triggerTime) // ✅ 주석 해제됨!
 
-                    // TODO: 알람뷰모델에 triggerTime 보내기
-                    // alarmViewModel.startSleepTracking(triggerTime)
+                    // 3. 눈으로 확인하기 위한 토스트 메시지 (추가)
+                    android.widget.Toast.makeText(context, "워치 연결 시도 중...", android.widget.Toast.LENGTH_SHORT).show()
 
-                    // 여기서 알람 정보를 디스크에 저장
+                    // 4. 설정 저장 (기존 로직)
                     val alarmPrefs = AlarmPreferences(context)
                     alarmPrefs.saveAlarm(alarmViewModel.alarm)
-                } )
-            {
+                }
+            ) {
                 Text("GTS")
             }
         }
