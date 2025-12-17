@@ -250,7 +250,29 @@ class SmartAlarmService : Service(), SensorEventListener {
         val windowStart = targetAlarmTime - SMART_WINDOW_MS
 
         if (currentTime < windowStart) return
-        if (currentTime > targetAlarmTime) return
+        
+        // [개선] 목표 시간 초과 시 폴백 알람 실행
+        if (currentTime > targetAlarmTime) {
+            Log.w(TAG, "⏰ Target time reached without smart trigger. Triggering fallback alarm...")
+            hasTriggered = true // 중복 실행 방지
+            
+            serviceScope.launch {
+                try {
+                    // 1. 폴백 알람 전송 (목표 시간에 무조건 울림)
+                    sendTriggerSignalSuspend(targetAlarmTime)
+                    
+                    // 2. 짧은 대기 (메시지 전송 안정성 확보)
+                    delay(500L)
+                    
+                    // 3. 결과 전송 및 서비스 종료
+                    stopAndSendResultSuspend()
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Error during fallback alarm", e)
+                    stopSelf() // 에러 발생 시에도 서비스는 종료
+                }
+            }
+            return
+        }
 
         var shouldTrigger = false
         var triggerReason = ""
