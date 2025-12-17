@@ -182,6 +182,13 @@ class SmartAlarmService : Service(), SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent?) {
         event ?: return
+        
+        // [안전성] 서비스 초기화 완료 전 센서 이벤트 무시
+        if (!isServiceRunning) return
+        if (!::dataRepository.isInitialized || !::userStatsManager.isInitialized || !::inferenceManager.isInitialized) {
+            return
+        }
+        
         val timestamp = System.currentTimeMillis()
 
         if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
@@ -324,6 +331,12 @@ class SmartAlarmService : Service(), SensorEventListener {
     // [리팩토링] Suspend 함수로 변경 - 순차 실행 가능
     private suspend fun sendTriggerSignalSuspend(triggerTime: Long) {
         try {
+            // [안전성] MessageClient 초기화 확인
+            if (!::messageClient.isInitialized) {
+                Log.w(TAG, "MessageClient not initialized, skipping trigger signal")
+                return
+            }
+            
             val nodeClient = Wearable.getNodeClient(this@SmartAlarmService)
             val connectedNodes = nodeClient.connectedNodes.await()
 
@@ -344,6 +357,12 @@ class SmartAlarmService : Service(), SensorEventListener {
     // [리팩토링] Suspend 함수로 변경 - 순차 실행 가능
     private suspend fun stopAndSendResultSuspend() {
         try {
+            // [안전성] MessageClient 초기화 확인 - 초기화되지 않았으면 전송 건너뛰기
+            if (!::messageClient.isInitialized) {
+                Log.w(TAG, "MessageClient not initialized, skipping result transmission")
+                return
+            }
+            
             val result = SleepSessionResult(
                 startTime = sessionStartTime,
                 endTime = System.currentTimeMillis(),
@@ -378,10 +397,35 @@ class SmartAlarmService : Service(), SensorEventListener {
     override fun onDestroy() {
         super.onDestroy()
         isServiceRunning = false
-        sensorManager.unregisterListener(this)
-        dataRepository.stopLogging()
+        
+        // [안전성] SensorManager 초기화 확인 후 리스너 해제
+        if (::sensorManager.isInitialized) {
+            try {
+                sensorManager.unregisterListener(this)
+                Log.d(TAG, "Sensor listeners unregistered")
+            } catch (e: Exception) {
+                Log.e(TAG, "Sensor unregister error", e)
+            }
+        } else {
+            Log.w(TAG, "SensorManager not initialized, skipping unregister")
+        }
+        
+        // [안전성] DataRepository 초기화 확인 후 로깅 중단
+        if (::dataRepository.isInitialized) {
+            try {
+                dataRepository.stopLogging()
+                Log.d(TAG, "DataRepository logging stopped")
+            } catch (e: Exception) {
+                Log.e(TAG, "DataRepository stop error", e)
+            }
+        } else {
+            Log.w(TAG, "DataRepository not initialized, skipping stop")
+        }
+        
+        // Coroutine Scope 취소
         serviceScope.cancel()
 
+        // [안전성] WakeLock 초기화 및 Held 상태 확인 후 해제
         try {
             if (::wakeLock.isInitialized && wakeLock.isHeld) {
                 wakeLock.release()
