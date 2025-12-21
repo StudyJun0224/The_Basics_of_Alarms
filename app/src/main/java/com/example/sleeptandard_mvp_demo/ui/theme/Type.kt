@@ -17,20 +17,21 @@ val Pretandard = FontFamily(
     Font(R.font.pretendard_semibold, FontWeight.SemiBold)
 )
 
-val TimePickerFont = FontFamily(
-    Font(R.font.pretendard_regular, FontWeight.Normal),
-    Font(R.font.pretendard_medium, FontWeight.Medium),
-    Font(R.font.pretendard_bold, FontWeight.Bold),
-)
-
 // Set of Material typography styles to start with
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = Pretandard,
         fontWeight = FontWeight.SemiBold,
+        fontSize = 22.sp,
+        lineHeight = 28.sp,
+        letterSpacing = 0.88.sp
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = Pretandard,
+        fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+        lineHeight = 28.sp,
+        letterSpacing = 0.64.sp
     ),
     /* Other default text styles to override
     titleLarge = TextStyle(

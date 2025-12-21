@@ -10,4 +10,8 @@ object AppIcons {
     @DrawableRes val NavSettings = R.drawable.ic_nav_settings
     @DrawableRes val HomeVibrate = R.drawable.ic_home_vibrate
     @DrawableRes val HomeVolume = R.drawable.ic_home_volume
+    @DrawableRes val SettedActivity = R.drawable.ic_setted_activity
+    @DrawableRes val JournalSmile = R.drawable.ic_journal_smile
+    @DrawableRes val RingBar = R.drawable.ic_ring_bar
+    @DrawableRes val ArrowRight = R.drawable.ic_ring_arrowright
 }

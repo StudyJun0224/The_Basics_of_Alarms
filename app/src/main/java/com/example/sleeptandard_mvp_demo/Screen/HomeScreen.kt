@@ -2,20 +2,16 @@ package com.example.sleeptandard_mvp_demo.Screen
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
+import android.media.RingtoneManager
+import android.net.Uri
+import android.content.Intent
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -25,36 +21,27 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-
-import android.media.RingtoneManager
-
-import android.net.Uri
-
-import android.content.Intent
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-
 import androidx.core.net.toUri
-
-import com.chargemap.compose.numberpicker.AMPMHours
 
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
 import com.example.sleeptandard_mvp_demo.Component.AlarmBottomNavBar
 import com.example.sleeptandard_mvp_demo.Component.ConfirmButton
 import com.example.sleeptandard_mvp_demo.Component.CustomTimePicker
 import com.example.sleeptandard_mvp_demo.Component.OptionsSection
-import com.example.sleeptandard_mvp_demo.Component.TimeAmPmPicker
 import com.example.sleeptandard_mvp_demo.Prefs.AlarmPreferences
 import com.example.sleeptandard_mvp_demo.ViewModel.AlarmViewModel
 
@@ -67,6 +54,8 @@ fun HomeScreen(
     isAm : Boolean = true,
     hour12 : Int = 8,
     minute : Int = 30,
+    /**experiment**/
+    goExperimentScreen: ()-> Unit
 ){
     val context = LocalContext.current
 
@@ -76,6 +65,7 @@ fun HomeScreen(
     var selectedRingtoneUri by remember { mutableStateOf("") }
     var selectedVibrationEnabled by remember { mutableStateOf(true) }
     var alarmName by remember {mutableStateOf("")}
+    var stopSignal by remember { mutableIntStateOf(0) } // ✅ 추가
 
     LaunchedEffect(alarmViewModel.alarm.ringtoneUri) {
         val uriStr = alarmViewModel.alarm.ringtoneUri
@@ -108,14 +98,13 @@ fun HomeScreen(
         }
     }
 
-    val bigSpacerHeight = LocalConfiguration.current.screenHeightDp
+    var selectedIndex by remember { mutableStateOf(0) }
 
     Scaffold(
         bottomBar = {
             AlarmBottomNavBar(
-                onHomeClick = {},
-                onScheduleClick = {},
-                onSettingsClick = {}
+                selectedIndex = selectedIndex,
+                onSelect = { selectedIndex = it }
             )
         }
     ) { innerPadding ->
@@ -127,7 +116,7 @@ fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(
-                modifier = Modifier.height((144 - 16000/bigSpacerHeight).dp)
+                modifier = Modifier.height(144.dp)
             )
             Box(
                 modifier = Modifier
@@ -139,11 +128,12 @@ fun HomeScreen(
                     defaultHour12 = alarmViewModel.alarm.hour,
                     defaultMinute = alarmViewModel.alarm.minute,
                     defaultIsAm = alarmViewModel.alarm.isAm,
+                    stopSignal = stopSignal, // ✅ 추가
                     onTimeChange = {hour12, minute, isAm ->
                         selectedHour = hour12
                         selectedMinute = minute
                         selectedIsAm = isAm
-                    }
+                    },
                 )
             }
 
@@ -154,53 +144,92 @@ fun HomeScreen(
                 thickness = 0.dp, color = DividerDefaults.color
             )
 
-            OptionsSection(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth(),
-
-                // 링톤 설정
-                onSoundClick = {
-                    val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
-                    .apply{
-                        // 추가적으로 설정합니다
-                        putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)   // 링톤 타입 = 알람
-                        putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "알람음 선택")                // 링톤 설정창 제목
-                        putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,                               // 기존 선택 알람 설정
-                            selectedRingtoneUri.toUri()
-                        )
+                    .fillMaxWidth()
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                awaitPointerEvent()
+                                stopSignal++ // ✅ 외부 터치 발생 → 타임피커 멈춤 신호
+                            }
+                        }
                     }
-                    ringtonePickerLauncher.launch(intent)},
-
-                // 진동 토글
-                onVibrationClick = { selectedVibrationEnabled = !selectedVibrationEnabled },
-                checked = selectedVibrationEnabled,
-                onCheckedChange = {selectedVibrationEnabled = it},
-                alarmName = alarmName
             )
+            {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
 
-            Spacer(modifier = Modifier.height(64.dp))
+                ) {
 
-            ConfirmButton(
-                modifier = Modifier
-                    .fillMaxWidth(193f/350f)
-                    .height(67.dp),
-                onClick = {
-                    onClickSetting()
-                    alarmViewModel.saveAlarm(
-                        selectedHour, selectedMinute, selectedIsAm, selectedRingtoneUri, selectedVibrationEnabled)
-                    scheduler.schedule(alarmViewModel.alarm)
+                    OptionsSection(
+                        modifier = Modifier
+                            .fillMaxWidth(),
 
-                    val triggerTime = scheduler.getTriggerTime()
+                        // 링톤 설정
+                        onSoundClick = {
+                            val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+                                .apply {
+                                    // 추가적으로 설정합니다
+                                    putExtra(
+                                        RingtoneManager.EXTRA_RINGTONE_TYPE,
+                                        RingtoneManager.TYPE_ALARM
+                                    )   // 링톤 타입 = 알람
+                                    putExtra(
+                                        RingtoneManager.EXTRA_RINGTONE_TITLE,
+                                        "알람음 선택"
+                                    )                // 링톤 설정창 제목
+                                    putExtra(
+                                        RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,                               // 기존 선택 알람 설정
+                                        selectedRingtoneUri.toUri()
+                                    )
+                                }
+                            ringtonePickerLauncher.launch(intent)
+                        },
 
-                    // 알람뷰모델에 triggerTime 보내기
-                    alarmViewModel.startSleepTracking(triggerTime)
+                        // 진동 토글
+                        onVibrationClick = { selectedVibrationEnabled = !selectedVibrationEnabled },
+                        checked = selectedVibrationEnabled,
+                        onCheckedChange = { selectedVibrationEnabled = it },
+                        alarmName = alarmName
+                    )
 
-                    // 여기서 알람 정보를 디스크에 저장
-                    val alarmPrefs = AlarmPreferences(context)
-                    alarmPrefs.saveAlarm(alarmViewModel.alarm)
+                    Spacer(modifier = Modifier.height(64.dp))
+
+                    ConfirmButton(
+                        modifier = Modifier
+                            .fillMaxWidth(193f / 350f)
+                            .height(67.dp),
+                        onClick = {
+                            onClickSetting()
+                            alarmViewModel.saveAlarm(
+                                selectedHour,
+                                selectedMinute,
+                                selectedIsAm,
+                                selectedRingtoneUri,
+                                selectedVibrationEnabled
+                            )
+                            scheduler.schedule(alarmViewModel.alarm)
+
+                            val triggerTime = scheduler.getTriggerTime()
+
+                            // 알람뷰모델에 triggerTime 보내기
+                            alarmViewModel.startSleepTracking(triggerTime)
+
+                            // 여기서 알람 정보를 디스크에 저장
+                            val alarmPrefs = AlarmPreferences(context)
+                            alarmPrefs.saveAlarm(alarmViewModel.alarm)
+                        }
+                    )
+
+                    /****experiment****/
+                    Button(
+                        onClick = goExperimentScreen
+                    ) { }
                 }
-            )
-
+            }
         }
     }
 }
@@ -213,13 +242,13 @@ fun HomeScreenPreview() {
     var h = 6
     var m = 25
     var i = true
+    var selectedIndex by remember { mutableStateOf(0) }
 
     Scaffold(
         bottomBar = {
             AlarmBottomNavBar(
-                onHomeClick = {},
-                onScheduleClick = {},
-                onSettingsClick = {}
+                selectedIndex = selectedIndex,
+                onSelect = { selectedIndex = it }
             )
         }
     ) { innerPadding ->
@@ -244,10 +273,9 @@ fun HomeScreenPreview() {
                         h = hour12
                         m = minute
                         i = isAm
-                    }
+                    },
                 )
             }
-
             Divider(
                 modifier = Modifier
                     .fillMaxWidth()

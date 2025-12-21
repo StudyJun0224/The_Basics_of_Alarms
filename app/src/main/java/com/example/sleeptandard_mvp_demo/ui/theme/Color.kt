@@ -16,6 +16,7 @@ val LightSurface = Color(0xFFD4DCE4)
 val LightPrimary = Color(0xFF0F2841)
 val LightSecondary = Color(0xFF475C71)
 
+val AlarmBackground = Color(0xFF041A30)
 
 /********* 기본 정의된 색상들 ********/
 val Purple80 = Color(0xFFD0BCFF)

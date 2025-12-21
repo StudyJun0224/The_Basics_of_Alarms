@@ -1,6 +1,6 @@
 package com.example.sleeptandard_mvp_demo.Component
 
-import android.R
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Vibration
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -28,16 +26,105 @@ import com.example.sleeptandard_mvp_demo.ui.theme.AppIcons
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Divider
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.chargemap.compose.numberpicker.AMPMHours
 
+
+@Composable
+fun AlarmBottomNavBar(
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+) {
+    NavigationBar {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            StandaloneBottomItem(
+                selected = selectedIndex == 0,
+                iconRes = AppIcons.NavAlarm,
+                label = "알람",
+                onClick = { onSelect(0) }
+            )
+            StandaloneBottomItem(
+                selected = selectedIndex == 1,
+                iconRes = AppIcons.NavJournal,
+                label = "일지",
+                onClick = { onSelect(1) }
+            )
+            StandaloneBottomItem(
+                selected = selectedIndex == 2,
+                iconRes = AppIcons.NavSettings,
+                label = "설정",
+                onClick = { onSelect(2) }
+            )
+        }
+    }
+}
+
+
+
+@Composable
+fun StandaloneBottomItem(
+    selected: Boolean,
+    iconRes: Int,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .selectable(
+                selected = selected,
+                onClick = onClick,
+                role = Role.Tab
+            )
+            .padding(horizontal = 18.dp, vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = label,
+            // ✅ 선택: 원본색 유지 / 비선택: 회색 틴트
+            tint = if (selected) Color.Unspecified
+            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+        )
+
+        if (selected) {
+            // ✅ 점 표시
+            Box(
+                modifier = Modifier
+                    .size(4.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = CircleShape
+                    )
+            )
+        } else {
+            // ✅ 텍스트 표시
+            Text(
+                text = label,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.55f)
+            )
+        }
+    }
+}
+
+/*
 @Composable
 fun AlarmBottomNavBar(
     onHomeClick: () -> Unit,
@@ -76,6 +163,7 @@ fun AlarmBottomNavBar(
         )
     }
 }
+ */
 
 @Composable
 fun OptionsSection(
@@ -236,12 +324,12 @@ fun ConfirmButton(
 @Composable
 fun HomeScreenPreiview(){
     var wtf = true
+    var wtff = 0
     Scaffold(
         bottomBar = {
             AlarmBottomNavBar(
-                onHomeClick = {},
-                onScheduleClick = {},
-                onSettingsClick = {}
+                selectedIndex = 0,
+                onSelect = { wtff   = it }
             )
         }
     ) { innerPadding ->
@@ -301,3 +389,4 @@ fun HomeScreenPreiview(){
         }
     }
 }
+

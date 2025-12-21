@@ -56,6 +56,9 @@ fun AppNav(
                     popUpTo(Screen.Home.route){inclusive = true}
                 }
                 },
+                goExperimentScreen = {
+                    rememberNavController.navigate(Screen.Experiment.route)
+                }
             )
         }
         composable(Screen.SettedAlarm.route){

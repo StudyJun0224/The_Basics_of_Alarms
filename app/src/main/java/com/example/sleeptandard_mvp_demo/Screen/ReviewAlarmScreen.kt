@@ -1,5 +1,6 @@
 package com.example.sleeptandard_mvp_demo.Screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,46 +22,55 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.sleeptandard_mvp_demo.Component.Screen
+import com.example.sleeptandard_mvp_demo.ui.theme.AlarmBackground
 
 @Composable
 fun ReviewAlarmScreen(
     onSubmit: () -> Unit = {}   // 선택값 전달 콜백
 ) {
-    var selectedOption by remember { mutableStateOf<String?>(null) }
+    var selectedOption1 by remember { mutableStateOf<String?>(null) }
+    var selectedOption2 by remember {mutableStateOf<String?>(null)}
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Top
+            .padding(12.dp)
+            .background(AlarmBackground),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.height(180.dp))
 
         Text(
-            text = "알람은 어땠나요?",
-            style = MaterialTheme.typography.titleLarge,
+            text = "1. 기상 후 컨디션은?",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = 20.sp,
+                color = Color.White
+            ),
             modifier = Modifier.padding(bottom = 20.dp)
         )
 
         // 라디오 버튼 3개
         RadioOptionItem(
             text = "Bad 😵",
-            selected = selectedOption == "bad",
-            onClick = { selectedOption = "bad" }
+            selected = selectedOption1 == "bad",
+            onClick = { selectedOption1 = "bad" }
         )
 
         RadioOptionItem(
             text = "So so 😐",
-            selected = selectedOption == "soso",
-            onClick = { selectedOption = "soso" }
+            selected = selectedOption1 == "soso",
+            onClick = { selectedOption1 = "soso" }
         )
 
         RadioOptionItem(
             text = "Good 😊",
-            selected = selectedOption == "good",
-            onClick = { selectedOption = "good" }
+            selected = selectedOption1 == "good",
+            onClick = { selectedOption1 = "good" }
         )
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -68,8 +78,10 @@ fun ReviewAlarmScreen(
         // 제출 버튼
         Button(
             onClick = onSubmit ,
-            enabled = selectedOption != null,
-            modifier = Modifier.fillMaxWidth()
+            enabled = selectedOption1 != null,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
         ) {
             Text("제출하기")
         }
