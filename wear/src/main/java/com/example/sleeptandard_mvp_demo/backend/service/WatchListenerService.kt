@@ -39,7 +39,9 @@ class WatchListenerService : WearableListenerService() {
             val targetAlarmTime = ByteBuffer.wrap(data).long
             Log.i(TAG, "START_TRACKING received. Target: $targetAlarmTime")
 
-            // 1. 필수 권한 목록 확인
+            // 1. 필수 권한 목록 확인 (런타임 권한만)
+            // 주의: REQUEST_IGNORE_BATTERY_OPTIMIZATIONS는 포함하지 말것!
+            // Foreground Service 환경에서는 BODY_SENSORS만으로 충분
             val permissions = arrayOf(
                 Manifest.permission.BODY_SENSORS,
                 Manifest.permission.ACTIVITY_RECOGNITION,

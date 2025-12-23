@@ -15,10 +15,14 @@ class PermissionActivity : ComponentActivity() {
 
     private var targetAlarmTime: Long = 0L
 
+    // [중요] 런타임 권한만 포함. REQUEST_IGNORE_BATTERY_OPTIMIZATIONS는 별도 Intent로 처리
+    // Foreground Service 환경에서는 BODY_SENSORS만으로 충분 (BODY_SENSORS_BACKGROUND 불필요)
     private val requiredPermissions = arrayOf(
         Manifest.permission.BODY_SENSORS,
         Manifest.permission.ACTIVITY_RECOGNITION,
         Manifest.permission.POST_NOTIFICATIONS
+        // 주의: REQUEST_IGNORE_BATTERY_OPTIMIZATIONS는 여기에 포함하지 말것!
+        // 이 권한은 Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS Intent로 처리해야 함
     )
 
     private val permissionLauncher = registerForActivityResult(
