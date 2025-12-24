@@ -14,6 +14,7 @@ import androidx.navigation.createGraph
 import com.example.sleeptandard_mvp_demo.ClassFile.Alarm
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
 import com.example.sleeptandard_mvp_demo.Screen.ExperimentScreen
+import com.example.sleeptandard_mvp_demo.Screen.JournalScreen
 import com.example.sleeptandard_mvp_demo.Screen.ReviewAlarmScreen
 import com.example.sleeptandard_mvp_demo.Screen.SettedAlarmScreen
 import com.example.sleeptandard_mvp_demo.ViewModel.AlarmViewModel
@@ -24,6 +25,7 @@ sealed class Screen(val route:String){
     object SettingAlarm: Screen("settingAlarm")*/
     object ReviewAlarm: Screen("reviewAlarm")
     object SettedAlarm: Screen("settedAlarm")
+    object Journal: Screen("journal")
 
     /** 실험 스크린 **/
     object Experiment: Screen("experiment")
@@ -58,7 +60,9 @@ fun AppNav(
                 },
                 goExperimentScreen = {
                     rememberNavController.navigate(Screen.Experiment.route)
-                }
+                },
+                onClickJournal = { rememberNavController.navigate(Screen.Journal.route) },
+                onClickSettingTab = { /* 네가 원하는 설정 화면 route로 */ }
             )
         }
         composable(Screen.SettedAlarm.route){
@@ -91,6 +95,10 @@ fun AppNav(
 
                     }
             )
+        }
+
+        composable(Screen.Journal.route) {
+            JournalScreen()
         }
 
         /** 실험장 **/

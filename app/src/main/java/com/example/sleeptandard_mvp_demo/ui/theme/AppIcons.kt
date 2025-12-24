@@ -14,4 +14,7 @@ object AppIcons {
     @DrawableRes val JournalSmile = R.drawable.ic_journal_smile
     @DrawableRes val RingBar = R.drawable.ic_ring_bar
     @DrawableRes val ArrowRight = R.drawable.ic_ring_arrowright
+    @DrawableRes val ReviewBadFace = R.drawable.ic_review_badface
+    @DrawableRes val ReviewSosoFace = R.drawable.ic_review_sosoface
+    @DrawableRes val ReviewGoodFace = R.drawable.ic_review_goodface
 }

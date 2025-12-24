@@ -36,10 +36,12 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.chargemap.compose.numberpicker.AMPMHours
+import com.example.sleeptandard_mvp_demo.ui.theme.LightBackground
 
 
 @Composable
@@ -47,7 +49,9 @@ fun AlarmBottomNavBar(
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
 ) {
-    NavigationBar {
+    NavigationBar(
+        containerColor = LightBackground
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceAround
@@ -91,9 +95,8 @@ fun StandaloneBottomItem(
                 onClick = onClick,
                 role = Role.Tab
             )
-            .padding(horizontal = 18.dp, vertical = 8.dp),
+            .padding(0.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Icon(
             painter = painterResource(iconRes),
@@ -104,10 +107,11 @@ fun StandaloneBottomItem(
         )
 
         if (selected) {
+            Spacer(Modifier.height(7.dp))
             // ✅ 점 표시
             Box(
                 modifier = Modifier
-                    .size(4.dp)
+                    .size(8.dp)
                     .background(
                         color = MaterialTheme.colorScheme.primary,
                         shape = CircleShape

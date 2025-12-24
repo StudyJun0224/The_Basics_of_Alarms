@@ -44,6 +44,7 @@ import com.example.sleeptandard_mvp_demo.Component.CustomTimePicker
 import com.example.sleeptandard_mvp_demo.Component.OptionsSection
 import com.example.sleeptandard_mvp_demo.Prefs.AlarmPreferences
 import com.example.sleeptandard_mvp_demo.ViewModel.AlarmViewModel
+import com.example.sleeptandard_mvp_demo.ui.theme.LightBackground
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
@@ -54,6 +55,8 @@ fun HomeScreen(
     isAm : Boolean = true,
     hour12 : Int = 8,
     minute : Int = 30,
+    onClickJournal: () -> Unit,
+    onClickSettingTab: () -> Unit,
     /**experiment**/
     goExperimentScreen: ()-> Unit
 ){
@@ -103,10 +106,17 @@ fun HomeScreen(
     Scaffold(
         bottomBar = {
             AlarmBottomNavBar(
-                selectedIndex = selectedIndex,
-                onSelect = { selectedIndex = it }
+                selectedIndex = 0, // Home 화면이니까 0 고정
+                onSelect = { idx ->
+                    when (idx) {
+                        0 -> { /* already home */ }
+                        1 -> onClickJournal()
+                        2 -> onClickSettingTab()
+                    }
+                }
             )
-        }
+        },
+        containerColor = LightBackground
     ) { innerPadding ->
         Column(
             modifier = Modifier
