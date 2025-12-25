@@ -1,8 +1,6 @@
 package com.example.sleeptandard_mvp_demo
 
-import android.app.AlarmManager
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -11,7 +9,6 @@ import android.util.Log
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.example.sleeptandard_mvp_demo.ClassFile.AlarmReceiver
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -101,27 +98,11 @@ class AlarmRingActivity : ComponentActivity() {
         val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         nm.cancel(alarmId)
 
-        // 3) AlarmManager에 등록된 백업 알람 취소
-        try {
-            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            val intent = Intent(this, AlarmReceiver::class.java)
-            val pendingIntent = PendingIntent.getBroadcast(
-                this,
-                alarmId,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            alarmManager.cancel(pendingIntent)
-            Log.i(TAG, "Backup alarm cancelled for alarmId: $alarmId")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to cancel backup alarm", e)
-        }
-
-        // 4) 워치에 수면 추적 중지 명령 전송
+        // 3) 워치에 수면 추적 중지 명령 전송
         alarmViewModel.stopSleepTracking()
         Log.i(TAG, "Stop command sent to Watch")
 
-        // 5) MainActivity로 넘어가면서 알람 리뷰 화면에서 부터 시작하도록 요청
+        // 4) MainActivity로 넘어가면서 알람 리뷰 화면에서 부터 시작하도록 요청
         val intent = Intent(this, MainActivity::class.java).apply {
             putExtra("startDestination", "reviewAlarm") // Screen.AfterAlarm.route 값
             addFlags(
@@ -131,7 +112,7 @@ class AlarmRingActivity : ComponentActivity() {
         }
         startActivity(intent)
 
-        // 6) 화면 닫기
+        // 5) 화면 닫기
         finish()
     }
 

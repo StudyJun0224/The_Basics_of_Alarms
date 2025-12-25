@@ -7,10 +7,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     
     <!-- Sensor Permissions -->
-    <!-- Foreground Service 환경에서는 BODY_SENSORS만으로 충분 -->
     <uses-permission android:name="android.permission.BODY_SENSORS" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
 
@@ -27,13 +25,11 @@
         <service
             android:name="com.example.sleeptandard_mvp_demo.service.SmartAlarmService"
             android:foregroundServiceType="health"
-            android:exported="false"
-            android:stopWithTask="false" />
+            android:exported="false" />
 
         <service
             android:name="com.example.sleeptandard_mvp_demo.backend.service.WatchListenerService"
-            android:exported="true"
-            android:stopWithTask="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
                 <data android:scheme="wear" android:host="*" />

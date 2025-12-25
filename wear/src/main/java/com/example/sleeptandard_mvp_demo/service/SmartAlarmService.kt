@@ -79,35 +79,7 @@ class SmartAlarmService : Service(), SensorEventListener {
         Log.d(TAG, "SmartAlarmService onCreate()")
     }
 
-    /**
-     * [배터리 최적화 대응] 서비스 진입 즉시 WakeLock 획득
-     * 삼성 워치의 MARs(배터리 최적화)가 서비스를 동결시키기 전에 CPU를 선점합니다.
-     */
-    private fun acquireWakeLockImmediately() {
-        try {
-            // WakeLock이 아직 초기화되지 않았다면 즉시 생성
-            if (!::wakeLock.isInitialized) {
-                val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-                wakeLock = powerManager.newWakeLock(
-                    PowerManager.PARTIAL_WAKE_LOCK,
-                    "SmartAlarm:TrackingWakeLock"
-                )
-            }
-            
-            // 아직 획득하지 않았다면 즉시 획득 (8시간)
-            if (!wakeLock.isHeld) {
-                wakeLock.acquire(8 * 60 * 60 * 1000L)
-                Log.i(TAG, "⚡ WakeLock acquired immediately")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to acquire WakeLock immediately", e)
-        }
-    }
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // [최우선] MARs(배터리 최적화) 동결 방지를 위해 진입 즉시 WakeLock 획득
-        acquireWakeLockImmediately()
-        
         when (intent?.action) {
             ACTION_START_TRACKING -> {
                 targetAlarmTime = intent.getLongExtra(EXTRA_TARGET_TIME, 0L)
@@ -130,9 +102,17 @@ class SmartAlarmService : Service(), SensorEventListener {
 
     private fun initializeService() {
         try {
-            // [중복 방지] WakeLock은 이미 onStartCommand에서 획득되었으므로 건너뜀
-            // acquireWakeLockImmediately()에서 이미 처리됨
-            
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            wakeLock = powerManager.newWakeLock(
+                PowerManager.PARTIAL_WAKE_LOCK,
+                "SmartAlarm:TrackingWakeLock"
+            )
+
+            if (!wakeLock.isHeld) {
+                wakeLock.acquire(8 * 60 * 60 * 1000L)
+                Log.d(TAG, "WakeLock acquired")
+            }
+
             sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
             dataRepository = DataRepository(this)
             userStatsManager = UserStatsManager(this)

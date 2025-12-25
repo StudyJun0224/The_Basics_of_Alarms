@@ -2,11 +2,8 @@ package com.example.sleeptandard_mvp_demo.backend.service
 
 // [필수 Import 추가됨]
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
-import android.os.PowerManager
 import android.util.Log
 import androidx.core.content.ContextCompat
 import com.example.sleeptandard_mvp_demo.PermissionActivity
@@ -42,9 +39,7 @@ class WatchListenerService : WearableListenerService() {
             val targetAlarmTime = ByteBuffer.wrap(data).long
             Log.i(TAG, "START_TRACKING received. Target: $targetAlarmTime")
 
-            // 1. 필수 권한 목록 확인 (런타임 권한만)
-            // 주의: REQUEST_IGNORE_BATTERY_OPTIMIZATIONS는 포함하지 말것!
-            // Foreground Service 환경에서는 BODY_SENSORS만으로 충분
+            // 1. 필수 권한 목록 확인
             val permissions = arrayOf(
                 Manifest.permission.BODY_SENSORS,
                 Manifest.permission.ACTIVITY_RECOGNITION,
@@ -52,36 +47,23 @@ class WatchListenerService : WearableListenerService() {
             )
 
             // 2. 권한이 모두 있는지 체크
-            val allPermissionsGranted = permissions.all {
+            // (ContextCompat과 PackageManager import가 없으면 여기서 빨간줄이 뜹니다)
+            val allGranted = permissions.all {
                 ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
             }
 
-            // 3. 배터리 최적화 예외 상태 확인
-            val isBatteryOptimizationIgnored = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-                powerManager.isIgnoringBatteryOptimizations(packageName)
-            } else {
-                true // Android M 미만은 배터리 최적화 기능 없음
-            }
-
-            // 4. 권한과 배터리 최적화 모두 확인
-            if (allPermissionsGranted && isBatteryOptimizationIgnored) {
-                // 4-A. 모든 조건 충족 -> 바로 서비스 시작
-                Log.i(TAG, "All permissions and battery optimization granted. Starting service.")
+            if (allGranted) {
+                // 3-A. 권한이 다 있으면 -> 바로 서비스 시작
                 val intent = Intent(this, SmartAlarmService::class.java).apply {
                     putExtra(SmartAlarmService.EXTRA_TARGET_TIME, targetAlarmTime)
                     action = SmartAlarmService.ACTION_START_TRACKING
                 }
                 startForegroundService(intent)
             } else {
-                // 4-B. 권한 또는 배터리 최적화 미충족 -> PermissionActivity 실행
-                if (!allPermissionsGranted) {
-                    Log.w(TAG, "Runtime permissions missing. Launching PermissionActivity.")
-                }
-                if (!isBatteryOptimizationIgnored) {
-                    Log.w(TAG, "Battery optimization not ignored. Launching PermissionActivity.")
-                }
+                // 3-B. 권한이 없으면 -> PermissionActivity 실행하여 권한 요청
+                Log.w(TAG, "Permissions missing. Launching Activity.")
 
+                // (PermissionActivity import가 없으면 여기서 빨간줄이 뜹니다)
                 val intent = Intent(this, PermissionActivity::class.java).apply {
                     putExtra(SmartAlarmService.EXTRA_TARGET_TIME, targetAlarmTime)
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) // 서비스에서 액티비티 켤 때 필수
