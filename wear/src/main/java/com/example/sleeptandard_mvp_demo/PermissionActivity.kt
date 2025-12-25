@@ -2,6 +2,7 @@ package com.example.sleeptandard_mvp_demo
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -14,7 +15,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import com.example.sleeptandard_mvp_demo.service.SmartAlarmService
 
@@ -104,26 +104,37 @@ class PermissionActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!isBatteryOptimizationIgnored()) {
                 Log.i(TAG, "Requesting battery optimization exception")
+                hasBatterySettingsLaunched = true // 설정 화면으로 이동 간주
+
                 try {
-                    // 배터리 설정 화면을 실행하기 직전에 플래그 설정
-                    hasBatterySettingsLaunched = true
-                    
+                    // Plan A: 팝업 띄우기 시도 (권장)
                     val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
                         data = Uri.parse("package:$packageName")
                     }
                     startActivity(intent)
+                    Log.i(TAG, "Plan A: Direct popup intent launched")
                 } catch (e: Exception) {
-                    Log.e(TAG, "Failed to open battery optimization settings", e)
-                    Toast.makeText(this, "배터리 설정을 열 수 없습니다.", Toast.LENGTH_SHORT).show()
-                    finish()
+                    Log.w(TAG, "Plan A failed, trying Plan B: Settings List", e)
+                    try {
+                        // Plan B: 설정 목록 화면 열기 (Fallback)
+                        val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                        startActivity(intent)
+                        Log.i(TAG, "Plan B: Settings list opened")
+                    } catch (e2: Exception) {
+                        Log.e(TAG, "Plan B also failed", e2)
+                        Toast.makeText(this, "배터리 설정 화면을 열 수 없습니다.", Toast.LENGTH_SHORT).show()
+                        // 설정 화면을 열 수 없으면 플래그 리셋하고 다이얼로그로 안내
+                        hasBatterySettingsLaunched = false
+                    }
                 }
             } else {
                 // 이미 배터리 최적화 예외 설정됨 -> 권한 확인으로
-                Log.i(TAG, "Battery optimization already ignored")
+                Log.i(TAG, "✅ Battery optimization already ignored")
                 checkAndRequestPermissions()
             }
         } else {
             // Android M 미만은 배터리 최적화 기능 없음 -> 권한 확인으로
+            Log.i(TAG, "Battery optimization not required (API < 23)")
             checkAndRequestPermissions()
         }
     }
