@@ -21,8 +21,6 @@ import com.example.sleeptandard_mvp_demo.ViewModel.AlarmViewModel
 
 sealed class Screen(val route:String){
     object Home: Screen("home")
-    /* Not using: 폐기
-    object SettingAlarm: Screen("settingAlarm")*/
     object ReviewAlarm: Screen("reviewAlarm")
     object SettedAlarm: Screen("settedAlarm")
     object Journal: Screen("journal")
@@ -77,13 +75,6 @@ fun AppNav(
                 }
             )
         }
-        /* Not using: 폐기
-        composable(Screen.SettingAlarm.route){
-            SettingAlarmScreen(
-                viewModel = alarmViewModel,
-                scheduler = scheduler,
-                onClickConfirm = {rememberNavController.popBackStack()})
-        }*/
 
         composable(Screen.ReviewAlarm.route){
             ReviewAlarmScreen(
