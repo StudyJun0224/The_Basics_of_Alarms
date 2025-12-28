@@ -52,9 +52,6 @@ fun HomeScreen(
     alarmViewModel: AlarmViewModel,
     scheduler: AlarmScheduler,
     onClickSetting: ()-> Unit,
-    isAm : Boolean = true,
-    hour12 : Int = 8,
-    minute : Int = 30,
     onClickJournal: () -> Unit,
     onClickSettingTab: () -> Unit,
     /**experiment**/
@@ -101,27 +98,9 @@ fun HomeScreen(
         }
     }
 
-    var selectedIndex by remember { mutableStateOf(0) }
-
-    Scaffold(
-        bottomBar = {
-            AlarmBottomNavBar(
-                selectedIndex = 0, // Home 화면이니까 0 고정
-                onSelect = { idx ->
-                    when (idx) {
-                        0 -> { /* already home */ }
-                        1 -> onClickJournal()
-                        2 -> onClickSettingTab()
-                    }
-                }
-            )
-        },
-        containerColor = LightBackground
-    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -242,7 +221,7 @@ fun HomeScreen(
             }
         }
     }
-}
+
 
 @Preview
 @Composable
@@ -254,18 +233,9 @@ fun HomeScreenPreview() {
     var i = true
     var selectedIndex by remember { mutableStateOf(0) }
 
-    Scaffold(
-        bottomBar = {
-            AlarmBottomNavBar(
-                selectedIndex = selectedIndex,
-                onSelect = { selectedIndex = it }
-            )
-        }
-    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -317,7 +287,7 @@ fun HomeScreenPreview() {
 
         }
     }
-}
+
 
 
 /********************** UI 변경 전 **********************/

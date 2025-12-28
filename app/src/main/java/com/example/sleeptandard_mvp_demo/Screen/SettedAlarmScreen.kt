@@ -70,18 +70,8 @@ fun SettedAlarmScreen(
 // 2번 텍스트가 등장하는 타이밍 = 1번 이동이 끝난 다음
     val textStartDelay = stayMs + moveMs.toLong()
 
-    Scaffold(
-        bottomBar = {
-            AlarmBottomNavBar(
-                selectedIndex = selectedIndex,
-                onSelect = { selectedIndex = it }
-            )
-        }
-    ){ innerpadding ->
-
         Column(
             modifier = Modifier
-                .padding(innerpadding)
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ){
@@ -211,7 +201,7 @@ fun SettedAlarmScreen(
         }
     }
 
-}
+
 
 fun getWakeUpTimeRange(hour:Int, minute: Int): String{
     var earlyTotalMinute: Int = (hour * 60 + minute) - 30
