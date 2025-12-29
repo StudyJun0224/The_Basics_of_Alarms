@@ -20,6 +20,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.createGraph
+import androidx.activity.compose.BackHandler
+
 import com.example.sleeptandard_mvp_demo.ClassFile.Alarm
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
 import com.example.sleeptandard_mvp_demo.Prefs.AlarmPreferences
@@ -106,10 +108,30 @@ fun AppNav(
         }
 
         composable(Screen.Journal.route) {
+            /* 뒤로가기 하면 화면 스택 전부 날아가고 홈으로 돌아가는건데 앞으로 구현할것 생각하면 못쓸거 같긴 함.
+            BackHandler {
+                rememberNavController.navigate(Screen.Home.route) {
+                    popUpTo(rememberNavController.graph.startDestinationId) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
+            }
+            */
             JournalScreen()
         }
 
-        composable(Screen.Settings.route){
+        composable(Screen.Settings.route) {
+            /*
+            BackHandler {
+                rememberNavController.navigate(Screen.Home.route) {
+                    popUpTo(rememberNavController.graph.startDestinationId) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
+            }
+             */
             SettingsScreen()
         }
 
@@ -119,13 +141,6 @@ fun AppNav(
         }
 
     }
-
-
-    /* 전에 쓰던 코드 잠시 비활성화
-    NavHost(
-        navController = rememberNavController,
-        graph = navGraph)
-    */
 
     /**** navigation 공사중 ****/
     val navBackStackEntry by rememberNavController.currentBackStackEntryAsState()   // 최신 스택을 가져옴 (현재 위치한 경로)
