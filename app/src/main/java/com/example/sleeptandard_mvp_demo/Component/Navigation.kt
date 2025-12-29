@@ -18,11 +18,13 @@ import androidx.navigation.createGraph
 
 import com.example.sleeptandard_mvp_demo.ClassFile.Alarm
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
+import com.example.sleeptandard_mvp_demo.ClassFile.QnARepository
 import com.example.sleeptandard_mvp_demo.Prefs.AlarmPreferences
 import com.example.sleeptandard_mvp_demo.Screen.ExperimentScreen
 import com.example.sleeptandard_mvp_demo.Screen.InquireScreen
 import com.example.sleeptandard_mvp_demo.Screen.JournalScreen
 import com.example.sleeptandard_mvp_demo.Screen.QnAScreen
+import com.example.sleeptandard_mvp_demo.Screen.QnADetailScreen
 import com.example.sleeptandard_mvp_demo.Screen.ReviewAlarmScreen
 import com.example.sleeptandard_mvp_demo.Screen.SendingDataScreen
 import com.example.sleeptandard_mvp_demo.Screen.SettedAlarmScreen
@@ -35,12 +37,16 @@ sealed class Screen(val route: String, val showBottomBar: Boolean = true) {
     object Journal : Screen("journal", showBottomBar = true)
     object Settings : Screen("settings", showBottomBar = true)
     object SendingData: Screen("sendingdata", showBottomBar = true)
+    object QnADetail : Screen("qna_detail/{id}", showBottomBar = true) {
+        fun createRoute(id: String) = "qna_detail/$id"
+    }
 
     object SettedAlarm : Screen("settedAlarm", showBottomBar = false)
     object ReviewAlarm : Screen("reviewAlarm", showBottomBar = false)
     object QnA: Screen("qna", showBottomBar = false)
     object Inquire: Screen("inquire", showBottomBar = false )
     object Tutorial: Screen("tutorial", showBottomBar = false)
+
 
     object Experiment : Screen("experiment", showBottomBar = false)
 }
@@ -146,7 +152,13 @@ fun AppNav(
         }
 
         composable(Screen.QnA.route){
-            QnAScreen()
+            QnAScreen(
+                onBack = { rememberNavController.popBackStack() },
+                onClickAsk = { rememberNavController.navigate(Screen.Inquire.route) },
+                onClickItem = { id ->
+                    rememberNavController.navigate(Screen.QnADetail.createRoute(id))
+                }
+            )
         }
         composable(Screen.Inquire.route){
             InquireScreen()
@@ -156,6 +168,19 @@ fun AppNav(
         }
         composable(Screen.SendingData.route) {
             SendingDataScreen()
+        }
+
+        composable("qna_detail/{id}") { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id") ?: return@composable
+
+            val item = QnARepository.findById(id)  // ✅ id로 찾기(4번에서 만듦)
+            if (item != null) {
+                QnADetailScreen(
+                    item = item,
+                    onBack = { rememberNavController.popBackStack() },
+                    onClickAskDeveloper = { rememberNavController.navigate(Screen.Inquire.route) }
+                )
+            }
         }
 
         /** 실험장 **/
@@ -190,7 +215,7 @@ fun AppNav(
                         Screen.Settings.route -> 2
                         Screen.SendingData.route -> 2
 
-                        else -> 0
+                        else -> 2
                     },
                     onSelect = { idx ->
                         val target = when (idx) {

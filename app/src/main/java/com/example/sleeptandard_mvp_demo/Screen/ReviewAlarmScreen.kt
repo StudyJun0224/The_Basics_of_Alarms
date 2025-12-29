@@ -62,7 +62,6 @@ fun ReviewAlarmScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(12.dp)
             .background(AlarmBackground),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

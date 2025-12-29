@@ -14,9 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,6 +41,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.sleeptandard_mvp_demo.ClassFile.QnARepository
 import com.example.sleeptandard_mvp_demo.ui.theme.AppIcons
 
 
@@ -59,37 +57,14 @@ fun QnAScreen(
 
     // FAQ 리스트
     val allItems = remember {
-        listOf(
-            "알람이 안 울려요.",
-            "위치랑 어떻게 연동하나요?",
-            "핸드폰에서만 울리게 할 순 없나요?",
-            "수면 인식이 안 되는 것 같아요.",
-            "피드백을 못 했어요.",
-            "워치가 없으면 이용할 수 없나요?",
-            "어떤 원리로 깨우는 건가요?",
-            "알람을 끄고 싶어요.",
-            "알람을 끄고 싶어요.",
-            "알람을 끄고 싶어요.",
-            "알람을 끄고 싶어요.",
-            "알람을 끄고 싶어요.",
-            "알람을 끄고 싶어요.",
-            "알람을 끄고 싶어요.",
-            "알람을 끄고 싶어요.",
-            "알람을 끄고 싶어요.",
-            "알람을 끄고 싶어요.",
-            "알람을 끄고 싶어요.",
-            "알람을 끄고 싶어요.",
-            "알람을 끄고 싶어요.",
-            "알람을 끄고 싶어요.",
-            "알람을 끄고 싶어요.",
-
-        )
+        QnARepository.items
     }
 
     // 필터링 하는 곳
     val filtered = remember(query, allItems) {
         val q = query.trim()
-        if (q.isEmpty()) allItems else allItems.filter { it.contains(q, ignoreCase = true) }
+        if (q.isEmpty()) allItems
+        else allItems.filter { it.title.contains(q, ignoreCase = true) }
     }
 
     Scaffold(
@@ -202,10 +177,10 @@ fun QnAScreen(
                 contentPadding = PaddingValues(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
-                items(filtered) { title ->
+                items(filtered) { item ->
                     QnAListItem(
-                        text = title,
-                        onClick = { onClickItem(title) }
+                        text = item.title,
+                        onClick = { onClickItem(item.id) } // ✅ id 넘김
                     )
                     Spacer(Modifier.height(28.dp))
                 }

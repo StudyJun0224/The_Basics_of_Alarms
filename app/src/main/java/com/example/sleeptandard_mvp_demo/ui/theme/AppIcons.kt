@@ -27,4 +27,6 @@ object AppIcons {
     @DrawableRes val QnAArrowBack = R.drawable.ic_qna_arrowback
     @DrawableRes val QnAQ = R.drawable.ic_qna_q
     @DrawableRes val QnASearch = R.drawable.ic_qna_search
+
+    @DrawableRes val SendingDataSend = R.drawable.ic_sendingdata_send
 }

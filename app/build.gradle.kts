@@ -78,4 +78,7 @@ dependencies {
     
     // Wearable API for Phone-Watch communication
     implementation("com.google.android.gms:play-services-wearable:18.1.0")
+
+    // 앱 시작 화면
+    implementation("androidx.core:core-splashscreen:1.0.1")
 }
