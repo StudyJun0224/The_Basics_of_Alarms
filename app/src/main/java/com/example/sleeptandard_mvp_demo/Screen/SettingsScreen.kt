@@ -1,6 +1,7 @@
 package com.example.sleeptandard_mvp_demo.Screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,14 +25,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sleeptandard_mvp_demo.ui.theme.AppIcons
 
-@Preview
 @Composable
-fun SettingsScreen(){
+fun SettingsScreen(
+    onClickQnA: ()-> Unit,
+    onClickPermission: ()-> Unit,
+    onClickTutorial: ()-> Unit,
+    onClickSendingData: ()-> Unit
+){
 
     Column(
         modifier = Modifier
@@ -62,24 +66,25 @@ fun SettingsScreen(){
             tonalElevation = 0.dp,
             shadowElevation = 0.dp
         ){
-            Row(
+            Column(
                 modifier = Modifier
                     .background(Color.Transparent)
                     .padding(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 16.dp),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(
+
+                Row(
                     modifier = Modifier
-                        .padding(vertical = 5.dp)
-                        .fillMaxHeight()
-                        .background(Color.Transparent),
-                    verticalArrangement = Arrangement.SpaceBetween
+                        .fillMaxWidth()
+                        .clickable { onClickQnA() },
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
                             .size(28.dp)
                             .background(color = Color(0xFF465467), shape = CircleShape),
                         contentAlignment = Alignment.Center
-                    ){
+                    ) {
                         Icon(
                             modifier = Modifier
                                 .size(18.dp),
@@ -87,32 +92,13 @@ fun SettingsScreen(){
                             contentDescription = "고객 지원"
                         )
                     }
-                    Box(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .background(color = Color(0xFF465467), shape = CircleShape),
-                        contentAlignment = Alignment.Center
-                    ){
-                        Icon(
-                            modifier = Modifier
-                                .size(18.dp),
-                            painter = painterResource(AppIcons.SettingsTool),
-                            contentDescription = "고객 지원"
-                        )
-                    }
-                }
 
-                Spacer(Modifier.width(16.dp))
+                    Spacer(Modifier.width(16.dp))
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxHeight(),
-                    verticalArrangement = Arrangement.SpaceBetween
-                ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                    ){
+                    ) {
                         Text(
                             "고객 지원",
                             style = MaterialTheme.typography.bodyMedium
@@ -130,13 +116,43 @@ fun SettingsScreen(){
                         )
 
                     }
+                }
 
-                    HorizontalDivider(Modifier.height(0.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Spacer(modifier = Modifier.width(44.dp))
+                    HorizontalDivider()
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onClickPermission() },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .background(color = Color(0xFF465467), shape = CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            modifier = Modifier
+                                .size(18.dp),
+                            painter = painterResource(AppIcons.SettingsTool),
+                            contentDescription = "시스템 접근권한"
+                        )
+                    }
+
+                    Spacer(Modifier.width(16.dp))
 
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                    ){
+                    ) {
                         Text(
                             "시스템 접근권한",
                             style = MaterialTheme.typography.bodyMedium
@@ -154,7 +170,9 @@ fun SettingsScreen(){
                         )
 
                     }
+
                 }
+
             }
 
         }
@@ -171,7 +189,8 @@ fun SettingsScreen(){
             Row(
                 modifier = Modifier
                     .padding(vertical = 16.dp, horizontal = 20.dp)
-            ){
+                    .clickable { onClickTutorial() }
+            ) {
                 Column(
                     modifier = Modifier
                         .padding(vertical = 5.dp)
@@ -217,6 +236,7 @@ fun SettingsScreen(){
                     )
                 }
             }
+
         }
 
         Surface(
@@ -228,10 +248,12 @@ fun SettingsScreen(){
             tonalElevation = 0.dp,
             shadowElevation = 0.dp
         ) {
+
             Row(
                 modifier = Modifier
                     .padding(vertical = 16.dp, horizontal = 20.dp)
-            ){
+                    .clickable { onClickSendingData() }
+            ) {
                 Column(
                     modifier = Modifier
                         .padding(vertical = 5.dp)
@@ -277,6 +299,7 @@ fun SettingsScreen(){
                     )
                 }
             }
+
         }
 
     }

@@ -23,4 +23,8 @@ object AppIcons {
     @DrawableRes val SettingsTool = R.drawable.ic_settings_tool
     @DrawableRes val SettingsQuestion = R.drawable.ic_settings_question
     @DrawableRes val SettingsActivity = R.drawable.ic_settings_activity
+
+    @DrawableRes val QnAArrowBack = R.drawable.ic_qna_arrowback
+    @DrawableRes val QnAQ = R.drawable.ic_qna_q
+    @DrawableRes val QnASearch = R.drawable.ic_qna_search
 }

@@ -20,19 +20,28 @@ import com.example.sleeptandard_mvp_demo.ClassFile.Alarm
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
 import com.example.sleeptandard_mvp_demo.Prefs.AlarmPreferences
 import com.example.sleeptandard_mvp_demo.Screen.ExperimentScreen
+import com.example.sleeptandard_mvp_demo.Screen.InquireScreen
 import com.example.sleeptandard_mvp_demo.Screen.JournalScreen
+import com.example.sleeptandard_mvp_demo.Screen.QnAScreen
 import com.example.sleeptandard_mvp_demo.Screen.ReviewAlarmScreen
+import com.example.sleeptandard_mvp_demo.Screen.SendingDataScreen
 import com.example.sleeptandard_mvp_demo.Screen.SettedAlarmScreen
 import com.example.sleeptandard_mvp_demo.Screen.SettingsScreen
+import com.example.sleeptandard_mvp_demo.Screen.TutorialScreen
 import com.example.sleeptandard_mvp_demo.ViewModel.AlarmViewModel
 
 sealed class Screen(val route: String, val showBottomBar: Boolean = true) {
     object Home : Screen("home", showBottomBar = true)
     object Journal : Screen("journal", showBottomBar = true)
     object Settings : Screen("settings", showBottomBar = true)
+    object SendingData: Screen("sendingdata", showBottomBar = true)
 
     object SettedAlarm : Screen("settedAlarm", showBottomBar = false)
     object ReviewAlarm : Screen("reviewAlarm", showBottomBar = false)
+    object QnA: Screen("qna", showBottomBar = false)
+    object Inquire: Screen("inquire", showBottomBar = false )
+    object Tutorial: Screen("tutorial", showBottomBar = false)
+
     object Experiment : Screen("experiment", showBottomBar = false)
 }
 
@@ -126,7 +135,27 @@ fun AppNav(
                 }
             }
              */
-            SettingsScreen()
+            SettingsScreen(
+                onClickQnA = {
+                    rememberNavController.navigate(Screen.QnA.route)
+                },
+                onClickTutorial = {rememberNavController.navigate(Screen.Tutorial.route)},
+                onClickPermission = {},
+                onClickSendingData = {rememberNavController.navigate(Screen.SendingData.route)}
+            )
+        }
+
+        composable(Screen.QnA.route){
+            QnAScreen()
+        }
+        composable(Screen.Inquire.route){
+            InquireScreen()
+        }
+        composable(Screen.Tutorial.route){
+            TutorialScreen()
+        }
+        composable(Screen.SendingData.route) {
+            SendingDataScreen()
         }
 
         /** 실험장 **/
@@ -136,7 +165,6 @@ fun AppNav(
 
     }
 
-    /**** navigation 공사중 ****/
     val navBackStackEntry by rememberNavController.currentBackStackEntryAsState()   // 최신 스택을 가져옴 (현재 위치한 경로)
     val currentRoute = navBackStackEntry?.destination?.route    // 최신 스택의 route를 가져옴 (현재 위치한 경로)
 
@@ -147,7 +175,8 @@ fun AppNav(
                 Screen.Home.route,
                 Screen.Journal.route,
                 Screen.Settings.route,
-                Screen.SettedAlarm.route -> true
+                Screen.SettedAlarm.route,
+                Screen.SendingData.route -> true
                 else -> false
             }
 
@@ -156,14 +185,15 @@ fun AppNav(
                 AlarmBottomNavBar(
                     selectedIndex = when (currentRoute) {
                         Screen.Home.route -> 0
+                        Screen.SettedAlarm.route -> 0
                         Screen.Journal.route -> 1
                         Screen.Settings.route -> 2
-                        // SettedAlarmScreen이 else에 들어가겠지
+                        Screen.SendingData.route -> 2
+
                         else -> 0
                     },
                     onSelect = { idx ->
                         val target = when (idx) {
-                            // 시발 이렇게 하는게 맞냐?
                             0 -> if(isAlarmSetted) Screen.SettedAlarm.route else Screen.Home.route
                             1 -> Screen.Journal.route
                             2 -> Screen.Settings.route
