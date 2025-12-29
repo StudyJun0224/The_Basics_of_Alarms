@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DividerDefaults
@@ -52,9 +53,6 @@ fun HomeScreen(
     alarmViewModel: AlarmViewModel,
     scheduler: AlarmScheduler,
     onClickSetting: ()-> Unit,
-    isAm : Boolean = true,
-    hour12 : Int = 8,
-    minute : Int = 30,
     onClickJournal: () -> Unit,
     onClickSettingTab: () -> Unit,
     /**experiment**/
@@ -101,44 +99,27 @@ fun HomeScreen(
         }
     }
 
-    var selectedIndex by remember { mutableStateOf(0) }
-
-    Scaffold(
-        bottomBar = {
-            AlarmBottomNavBar(
-                selectedIndex = 0, // Home 화면이니까 0 고정
-                onSelect = { idx ->
-                    when (idx) {
-                        0 -> { /* already home */ }
-                        1 -> onClickJournal()
-                        2 -> onClickSettingTab()
-                    }
-                }
-            )
-        },
-        containerColor = LightBackground
-    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(
-                modifier = Modifier.height(144.dp)
+                modifier = Modifier.height(171.dp)
             )
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 36.dp)
+                    .padding(horizontal = 28.dp)
                     .height(186.dp)
+                    .width(255.dp)
             ){
                 CustomTimePicker(
                     defaultHour12 = alarmViewModel.alarm.hour,
                     defaultMinute = alarmViewModel.alarm.minute,
                     defaultIsAm = alarmViewModel.alarm.isAm,
-                    stopSignal = stopSignal, // ✅ 추가
+                    stopSignal = stopSignal,
                     onTimeChange = {hour12, minute, isAm ->
                         selectedHour = hour12
                         selectedMinute = minute
@@ -147,12 +128,7 @@ fun HomeScreen(
                 )
             }
 
-            HorizontalDivider(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 65.dp),
-                thickness = 0.dp, color = DividerDefaults.color
-            )
+            Spacer(Modifier.height(93.dp))
 
             Box(
                 modifier = Modifier
@@ -206,12 +182,12 @@ fun HomeScreen(
                         alarmName = alarmName
                     )
 
-                    Spacer(modifier = Modifier.height(64.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
                     ConfirmButton(
                         modifier = Modifier
-                            .fillMaxWidth(193f / 350f)
-                            .height(67.dp),
+                            .fillMaxWidth()
+                            .height(48.dp),
                         onClick = {
                             onClickSetting()
                             alarmViewModel.saveAlarm(
@@ -234,15 +210,17 @@ fun HomeScreen(
                         }
                     )
 
+                    /*
                     /****experiment****/
                     Button(
                         onClick = goExperimentScreen
                     ) { }
+                    */
                 }
             }
         }
     }
-}
+
 
 @Preview
 @Composable
@@ -254,19 +232,10 @@ fun HomeScreenPreview() {
     var i = true
     var selectedIndex by remember { mutableStateOf(0) }
 
-    Scaffold(
-        bottomBar = {
-            AlarmBottomNavBar(
-                selectedIndex = selectedIndex,
-                onSelect = { selectedIndex = it }
-            )
-        }
-    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp, vertical = 16.dp),
+                .padding(horizontal = 24.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -317,7 +286,7 @@ fun HomeScreenPreview() {
 
         }
     }
-}
+
 
 
 /********************** UI 변경 전 **********************/

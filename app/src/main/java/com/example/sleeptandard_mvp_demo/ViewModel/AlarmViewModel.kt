@@ -44,15 +44,6 @@ class AlarmViewModel(application: Application): AndroidViewModel(application) {
         _alarms.add(newAlarm)
         return newAlarm
     }
-    /* Not using : 알람 설정완료 여부로 판단
-    // 알람 활성화/비활성화
-    fun toggleAlarm(id: Int) {
-        val index = _alarms.indexOfFirst { it.id == id }
-        if (index != -1) {
-            val alarm = _alarms[index]
-            _alarms[index] = alarm.copy(isOn = !alarm.isOn)
-        }
-    }*/
 
     // 알람 삭제
     fun deleteAlarm(id: Int) {
