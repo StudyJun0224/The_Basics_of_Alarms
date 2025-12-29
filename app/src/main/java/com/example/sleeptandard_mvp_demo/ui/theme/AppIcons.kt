@@ -18,4 +18,9 @@ object AppIcons {
     @DrawableRes val ReviewSosoFace = R.drawable.ic_review_sosoface
     @DrawableRes val ReviewGoodFace = R.drawable.ic_review_goodface
     @DrawableRes val SettedActivityDark = R.drawable.ic_setted_activity_dark
+
+    @DrawableRes val SettingsMail = R.drawable.ic_settings_mail
+    @DrawableRes val SettingsTool = R.drawable.ic_settings_tool
+    @DrawableRes val SettingsQuestion = R.drawable.ic_settings_question
+    @DrawableRes val SettingsActivity = R.drawable.ic_settings_activity
 }
