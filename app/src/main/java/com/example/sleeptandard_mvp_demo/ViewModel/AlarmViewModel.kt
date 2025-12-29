@@ -80,7 +80,7 @@ class AlarmViewModel(application: Application): AndroidViewModel(application) {
             }
         }
     }
-    
+
     /**
      * Watch에게 수면 추적 중지 명령 전송
      */

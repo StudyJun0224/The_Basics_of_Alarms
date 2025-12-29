@@ -49,7 +49,7 @@ fun AlarmBottomNavBar(
     onSelect: (Int) -> Unit,
 ) {
     NavigationBar(
-        containerColor = LightBackground
+        containerColor = MaterialTheme.colorScheme.background
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -101,7 +101,7 @@ fun StandaloneBottomItem(
             painter = painterResource(iconRes),
             contentDescription = label,
             // ✅ 선택: 원본색 유지 / 비선택: 회색 틴트
-            tint = if (selected) Color.Unspecified
+            tint = if (selected) Color(0xFFE0F5FD)
             else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
         )
 
@@ -112,7 +112,7 @@ fun StandaloneBottomItem(
                 modifier = Modifier
                     .size(8.dp)
                     .background(
-                        color = MaterialTheme.colorScheme.primary,
+                        color = Color(0xFFE0F5FD),
                         shape = CircleShape
                     )
             )
