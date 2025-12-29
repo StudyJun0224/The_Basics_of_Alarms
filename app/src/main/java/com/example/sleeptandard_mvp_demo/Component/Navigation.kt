@@ -26,7 +26,6 @@ import com.example.sleeptandard_mvp_demo.Screen.SettedAlarmScreen
 import com.example.sleeptandard_mvp_demo.Screen.SettingsScreen
 import com.example.sleeptandard_mvp_demo.ViewModel.AlarmViewModel
 
-
 sealed class Screen(val route: String, val showBottomBar: Boolean = true) {
     object Home : Screen("home", showBottomBar = true)
     object Journal : Screen("journal", showBottomBar = true)
@@ -89,6 +88,7 @@ fun AppNav(
                 }
             )
         }
+
         composable(Screen.ReviewAlarm.route){
             ReviewAlarmScreen(
                 onSubmit = {
