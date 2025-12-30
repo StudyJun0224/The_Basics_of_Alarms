@@ -233,8 +233,21 @@ class SmartAlarmService : Service(), SensorEventListener {
             try {
                 val userMean = userStatsManager.getUserMean()
                 val userStd = userStatsManager.getUserStd()
+                
+                // RMSSD 계산 및 통계 업데이트
+                val rmssdRaw = featureExtractor.calculateApproxRmssd(hrSnapshot)
+                userStatsManager.updateRmssd(rmssdRaw)
+                
+                val userBaseRmssd = userStatsManager.getUserBaseRmssd()
+                val userStdRmssd = userStatsManager.getUserStdRmssd()
 
-                val hrFeatures = featureExtractor.getFeatures(hrSnapshot, userMean, userStd)
+                val hrFeatures = featureExtractor.getFeatures(
+                    hrSnapshot, 
+                    userMean, 
+                    userStd,
+                    userBaseRmssd,
+                    userStdRmssd
+                )
                 val featureString = hrFeatures.joinToString(",")
 
                 val currentStage = inferenceManager.predict(accSnapshot, hrFeatures)
