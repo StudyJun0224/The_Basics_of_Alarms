@@ -25,7 +25,8 @@
         <service
             android:name="com.example.sleeptandard_mvp_demo.service.SmartAlarmService"
             android:foregroundServiceType="health"
-            android:exported="false" />
+            android:exported="false"
+            android:stopWithTask="false" />
 
         <service
             android:name="com.example.sleeptandard_mvp_demo.backend.service.WatchListenerService"
@@ -35,6 +36,16 @@
                 <data android:scheme="wear" android:host="*" />
             </intent-filter>
         </service>
+        <!-- Trampoline Activity: 화면이 꺼진 상태에서 서비스를 안전하게 시작 -->
+        <activity
+            android:name="com.example.sleeptandard_mvp_demo.LaunchActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:stopWithTask="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:taskAffinity=""
+            android:launchMode="singleTask" />
+
         <activity
             android:name="com.example.sleeptandard_mvp_demo.PermissionActivity"
             android:exported="false"

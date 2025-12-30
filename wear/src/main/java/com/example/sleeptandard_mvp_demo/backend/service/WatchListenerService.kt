@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.core.content.ContextCompat
+import com.example.sleeptandard_mvp_demo.LaunchActivity
 import com.example.sleeptandard_mvp_demo.PermissionActivity
 import com.example.sleeptandard_mvp_demo.service.SmartAlarmService
 import com.google.android.gms.wearable.MessageEvent
@@ -53,12 +54,15 @@ class WatchListenerService : WearableListenerService() {
             }
 
             if (allGranted) {
-                // 3-A. 권한이 다 있으면 -> 바로 서비스 시작
-                val intent = Intent(this, SmartAlarmService::class.java).apply {
+                // 3-A. 권한이 다 있으면 -> LaunchActivity를 통해 서비스 시작 (Trampoline 패턴)
+                Log.d(TAG, "All permissions granted. Launching trampoline activity...")
+                
+                val intent = Intent(this, LaunchActivity::class.java).apply {
                     putExtra(SmartAlarmService.EXTRA_TARGET_TIME, targetAlarmTime)
-                    action = SmartAlarmService.ACTION_START_TRACKING
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) // 서비스에서 액티비티 켤 때 필수
                 }
-                startForegroundService(intent)
+                startActivity(intent)
+                Log.i(TAG, "✅ LaunchActivity started (will trigger SmartAlarmService)")
             } else {
                 // 3-B. 권한이 없으면 -> PermissionActivity 실행하여 권한 요청
                 Log.w(TAG, "Permissions missing. Launching Activity.")
