@@ -29,8 +29,10 @@ import com.example.sleeptandard_mvp_demo.Screen.ReviewAlarmScreen
 import com.example.sleeptandard_mvp_demo.Screen.SendingDataScreen
 import com.example.sleeptandard_mvp_demo.Screen.SettedAlarmScreen
 import com.example.sleeptandard_mvp_demo.Screen.SettingsScreen
+import com.example.sleeptandard_mvp_demo.Screen.SplashScreen
 import com.example.sleeptandard_mvp_demo.Screen.TutorialScreen
 import com.example.sleeptandard_mvp_demo.ViewModel.AlarmViewModel
+import kotlinx.coroutines.delay
 
 sealed class Screen(val route: String, val showBottomBar: Boolean = true) {
     object Home : Screen("home", showBottomBar = true)
@@ -41,6 +43,7 @@ sealed class Screen(val route: String, val showBottomBar: Boolean = true) {
         fun createRoute(id: String) = "qna_detail/$id"
     }
 
+    object Splash : Screen("splash" , showBottomBar = false)
     object SettedAlarm : Screen("settedAlarm", showBottomBar = false)
     object ReviewAlarm : Screen("reviewAlarm", showBottomBar = false)
     object QnA: Screen("qna", showBottomBar = false)
@@ -55,7 +58,7 @@ sealed class Screen(val route: String, val showBottomBar: Boolean = true) {
 fun AppNav(
     scheduler: AlarmScheduler,
     // 실험중
-    startDestination: String = Screen.Home.route,
+    startDestination: String = Screen.Splash.route,
     initialAlarm: Alarm? = null   // ✨ 추가
 ){
 
@@ -76,20 +79,26 @@ fun AppNav(
     val isAlarmSetted = alarmPrefs.isAlarmSet()
 
     val navGraph = rememberNavController.createGraph(startDestination = startDestination){
+
+        composable(Screen.Splash.route){
+            LaunchedEffect(Unit) {
+                delay(900) // 0.9초 보여주기
+                rememberNavController.navigate("home") {
+                    popUpTo("splash") { inclusive = true } // 스플래시를 backstack에서 제거
+                }
+            }
+            SplashScreen()
+        }
+
         composable(Screen.Home.route){
             HomeScreen(
                 alarmViewModel = alarmViewModel,
                 scheduler = scheduler,
-                onClickSetting = {
+                onClickConfirm = {
                     rememberNavController.navigate(Screen.SettedAlarm.route){
                         popUpTo(Screen.Home.route){inclusive = true}
                     }
                 },
-                goExperimentScreen = {
-                    rememberNavController.navigate(Screen.Experiment.route)
-                },
-                onClickJournal = { rememberNavController.navigate(Screen.Journal.route) },
-                onClickSettingTab = { /* 네가 원하는 설정 화면 route로 */ }
             )
         }
         composable(Screen.SettedAlarm.route){
@@ -195,7 +204,7 @@ fun AppNav(
 
     Scaffold(
         bottomBar = {
-            // 지금 라우트가 홈, 일지, 설정, 설정완료화면 이면 바텀네비바를 띄우기 위한 Boolean값임.
+            // 지금 라우트가 홈, 일지, 설정, 알람설정완료화면, 데이터보내기  이면 바텀네비바를 띄우기 위한 Boolean값임.
             val showBottom = when (currentRoute) {
                 Screen.Home.route,
                 Screen.Journal.route,

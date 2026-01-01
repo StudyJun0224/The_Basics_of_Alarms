@@ -29,4 +29,6 @@ object AppIcons {
     @DrawableRes val QnASearch = R.drawable.ic_qna_search
 
     @DrawableRes val SendingDataSend = R.drawable.ic_sendingdata_send
+
+    @DrawableRes val SplashLogo = R.drawable.ic_splash_logo
 }

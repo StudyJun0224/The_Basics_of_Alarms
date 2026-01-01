@@ -83,7 +83,7 @@ fun SettedAlarmScreen(
     val centerGlow = Brush.verticalGradient(
         colorStops = arrayOf(
             0f to Color.Transparent,
-            0.5f to Color.White.copy(alpha = 0.03f), // ✅ 여기 알파값 조절(0.06~0.14 추천)
+            0.5f to Color.White.copy(alpha = 0.06f), // 그라데이션 배경 알파값 조절(0.06~0.14 추천)
             1f to Color.Transparent
         )
     )
@@ -93,17 +93,20 @@ fun SettedAlarmScreen(
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
+        Spacer(modifier = Modifier.weight(5f))
+        Spacer(Modifier.height(54.dp))
+
         LiftUpTwice(
             startDelayMs = liftStartDelay,
             moveMs = moveMs,
             lift = shift,
-            betweenDelayMs = stayMs // ✅ “한 번 더 딜레이 후”의 딜레이
+            betweenDelayMs = stayMs // “한 번 더 딜레이 후”의 딜레이
         ) { liftedModifier ->
             Column(
                 modifier = liftedModifier.padding(10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Spacer(modifier = Modifier.height(283.dp))
 
                 Surface(
                     modifier = Modifier.height(52.dp).fillMaxWidth().clip(shape),
@@ -179,9 +182,9 @@ fun SettedAlarmScreen(
             contentDescription = "찌릿찌릿",
             contentScale = ContentScale.FillBounds
         )
-         */
+        */
 
-        Spacer(modifier = Modifier.height(157.dp))
+        Spacer(modifier = Modifier.weight(4f))
 
         Button(
             modifier = Modifier
@@ -199,6 +202,8 @@ fun SettedAlarmScreen(
                 onTurnAlarmOff()
             }
         ) { Text("알람중지") }
+
+        Spacer(Modifier.height(55.dp))
     }
 }
 

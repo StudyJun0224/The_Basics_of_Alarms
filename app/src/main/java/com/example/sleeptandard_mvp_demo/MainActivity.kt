@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 import com.example.sleeptandard_mvp_demo.ClassFile.AlarmScheduler
 import com.example.sleeptandard_mvp_demo.Component.AppNav
@@ -14,8 +15,11 @@ import com.example.sleeptandard_mvp_demo.Permission.checkNotificationPermission
 import com.example.sleeptandard_mvp_demo.Permission.checkSetExactAlarms
 import com.example.sleeptandard_mvp_demo.Prefs.AlarmPreferences
 
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
+
         super.onCreate(savedInstanceState)
 
         // 권한 설정 여부 확인. 안되어 있으면 설정 창으로
@@ -36,7 +40,7 @@ class MainActivity : ComponentActivity() {
         val startDestination =
             startDestinationFromIntent
                 ?: if (alarmPrefs.isAlarmSet()) Screen.SettedAlarm.route
-                else Screen.Home.route
+                else Screen.Splash.route
 
 
         enableEdgeToEdge()
